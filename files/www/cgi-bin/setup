@@ -163,7 +163,7 @@ unless($parms{reload})
     if ( $doesiwoffset ) {
         $wifi_txpower -= $1;
     }
-    $slottime   = "";
+    # $slottime   = "";
 }
 
 # sanitize the active settings

@@ -22,8 +22,8 @@ else
 }
 
 
-$lastset=0;
-$lastval=0;
+# $lastset=0;
+# $lastval=0;
 
 
 #dbm values for each RSSI trigger level
