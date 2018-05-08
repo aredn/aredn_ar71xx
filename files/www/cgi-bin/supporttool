@@ -88,6 +88,7 @@ use perlfunc;
           "/usr/local/bin/get_hardwaretype",
           "/usr/local/bin/get_boardid",
           "/usr/local/bin/get_model",
+          "cat /dev/mtd0|grep 'U-Boot'|head -n1", # relevant for UBNT only
          );
 
 $FREE_SPACE_TMP=get_free_space("/tmp");
