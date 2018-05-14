@@ -40,7 +40,6 @@ require("aredn.utils")
 require("aredn.http")
 require("nixio")
 require("ubus")
-require("luci.http")
 local ipc = require("luci.ip")
 
 -- Function extensions
