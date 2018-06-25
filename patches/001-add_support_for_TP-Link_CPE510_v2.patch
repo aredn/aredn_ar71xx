@@ -1,0 +1,76 @@
+--- a/target/linux/ar71xx/base-files/lib/ar71xx.sh
++++ b/target/linux/ar71xx/base-files/lib/ar71xx.sh
+@@ -578,8 +578,18 @@ ar71xx_board_detect() {
+ 		name="cpe505n"
+ 		;;
+ 	*"CPE510/520")
+-		name="cpe510"
+-		tplink_pharos_board_detect "$(tplink_pharos_get_model_string | tr -d '\r')"
++                name="cpe510"
++                tplink_v2_check() {
++                        local part
++                        part=$(find_mtd_part 'product-info')
++                        dd if=$part bs=1 skip=4360 count=64 2>/dev/null | tr -d '\r\0' | head -n 1
++                        }
++                        md_string="$(tplink_v2_check)"
++                        if [ "${md_string:35:3}" == "2.0" ] || [ "${md_string:26:3}" == "2.0" ] ; then
++                                                tplink_pharos_board_detect "$(tplink_pharos_v2_get_model_string)"
++                        else
++                                                tplink_pharos_board_detect "$(tplink_pharos_get_model_string | tr -d '\r')"
++                        fi
+ 		;;
+ 	*"CPE830")
+ 		name="cpe830"
+--- a/target/linux/ar71xx/base-files/lib/upgrade/platform.sh
++++ b/target/linux/ar71xx/base-files/lib/upgrade/platform.sh
+@@ -576,7 +576,6 @@ platform_check_image() {
+ 		return $?
+ 		;;
+ 	cpe210|\
+-	cpe510|\
+ 	eap120|\
+ 	wbs210|\
+ 	wbs510)
+@@ -587,6 +586,21 @@ platform_check_image() {
+ 		tplink_pharos_check_image "$1" "01000000" "$(tplink_pharos_v2_get_model_string)" '\0\xff\r' && return 0
+ 		return 1
+ 		;;
++        cpe510)
++               tplink_v2_check() {
++                        local part
++                        part=$(find_mtd_part 'product-info')
++                        dd if=$part bs=1 skip=4360 count=64 2>/dev/null | tr -d '\r\0' | head -n 1
++                        }
++                        md_string="$(tplink_v2_check)"
++                        if [ "${md_string:35:3}" == "2.0" ] || [ "${md_string:26:3}" == "2.0" ] ; then
++				tplink_pharos_check_image "$1" "7f454c46" "$(tplink_pharos_v2_get_model_string)" '\0\xff\r' && return 0
++                                return 1
++                        else
++                                tplink_pharos_check_image "$1" "7f454c46" "$(tplink_pharos_get_model_string)" '' && return 0
++                                return 1
++                        fi
++                 ;;
+ 	a40|\
+ 	a60|\
+ 	mr1750|\
+--- a/tools/firmware-utils/src/tplink-safeloader.c
++++ b/tools/firmware-utils/src/tplink-safeloader.c
+@@ -210,7 +210,17 @@ static struct device_info boards[] = {
+ 			"CPE510(TP-LINK|EU|N300-5):1.1\r\n"
+ 			"CPE520(TP-LINK|UN|N300-5):1.1\r\n"
+ 			"CPE520(TP-LINK|US|N300-5):1.1\r\n"
+-			"CPE520(TP-LINK|EU|N300-5):1.1\r\n",
++			"CPE520(TP-LINK|EU|N300-5):1.1\r\n"
++                        "CPE510(TP-LINK|EU|N300-5|00000000):2.0\r\n"
++                        "CPE510(TP-LINK|EU|N300-5|45550000):2.0\r\n"
++                        "CPE510(TP-LINK|EU|N300-5|55530000):2.0\r\n"
++                        "CPE510(TP-LINK|UN|N300-5|00000000):2.0\r\n"
++                        "CPE510(TP-LINK|UN|N300-5|45550000):2.0\r\n"
++                        "CPE510(TP-LINK|UN|N300-5|55530000):2.0\r\n"
++                        "CPE510(TP-LINK|US|N300-5|55530000):2.0\r\n"
++                        "CPE510(TP-LINK|UN|N300-5):2.0\r\n"
++                        "CPE510(TP-LINK|EU|N300-5):2.0\r\n"
++                        "CPE510(TP-LINK|US|N300-5):2.0\r\n",
+ 		.support_trail = '\xff',
+ 		.soft_ver = NULL,
+ 
