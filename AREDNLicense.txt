@@ -13,7 +13,7 @@ Amateur Radio Emergency Data Network, Inc. and are used with Permission.
 --- End Additional terms --- 
 Permission of Amateur Radio Emergency Data Network, Inc. listed below:
 
-Amateur Radio Emergency Data Network, Inc. grants a license to use the ARDEN(TM) trademark in
+Amateur Radio Emergency Data Network, Inc. grants a license to use the AREDN(TM) trademark in
 officially sanctioned AREDN(TM) software releases and promotional material
 including, but not limited to, arednmesh.org, aredn.com, aredn.net, and aredn.org websites.
 Where questions arise as to the licensed use or the validity of an AREDN(TM)
