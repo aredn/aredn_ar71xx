@@ -2,7 +2,7 @@
 --[[
 
 	Part of AREDN -- Used for creating Amateur Radio Emergency Data Networks
-	Copyright (C) 2016 Darryl Quinn
+	Copyright (C) 2018 Darryl Quinn
 	See Contributors file for additional contributors
 
 	This program is free software: you can redistribute it and/or modify
@@ -250,4 +250,18 @@ function capture(cmd)
 	local result=handle:read("*a")
 	handle:close()
 	return(result)
+end
+
+function secondsToClock(seconds)
+  local seconds = tonumber(seconds)
+
+  if seconds <= 0 then
+    return "00:00:00";
+  else
+        days = string.format("%d", math.floor(seconds/86400));
+    hours = string.format("%d", math.floor(math.mod(seconds, 86400)/3600));
+    mins = string.format("%02d", math.floor(math.mod(seconds,3600)/60));
+    secs = string.format("%02d", math.floor(math.mod(seconds,60)));
+    return days.." days, "..hours..":"..mins..":"..secs
+  end
 end
