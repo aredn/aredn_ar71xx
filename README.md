@@ -7,6 +7,18 @@ http://www.aredn.org
 The AREDN firmware is based on OpenWrt with additional packages and patches.
 A Makefile automates the entire process to create firmware images.
 
+### Building with Docker
+To build with docker:
+```
+docker pull arednmesh/builder
+docker run -it --name builder arednmesh/builder
+```
+
+To pull an image (or any other file) out of the docker container:
+```
+docker cp builder:/opt/aredn/aredn_ar71xx/firmware/targets/ar71xx/generic/<image>.bin <local directory>
+```
+
 ### Build Prerequisites
 
 Please take a look at the [OpenWrt documentation](https://openwrt.org/docs/guide-developer/install-buildsystem)
