@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /home/aredn
+    working_directory: /opt/aredn/aredn_ar71xx
     branches:
       only:
         - develop
