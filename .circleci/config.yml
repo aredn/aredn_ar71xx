@@ -83,7 +83,7 @@ workflows:
   nightly:
     triggers:
       - schedule:
-          cron: "0 21 * * *" # 9PM UTC
+          cron: "0 9 * * *" # 9AM UTC
           filters:
             branches:
               only: develop
