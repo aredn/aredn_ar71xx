@@ -39,4 +39,4 @@ jobs:
           command: ssh ${SSH_USER}@${SSH_HOST} "sh -c 'mv ~/targets ${NIGHTLY_DIR}'"
       - run:
           name: Move packages
-          command: ssh ${SSH_USER}@${SSH_HOST} "sh -c 'mv ~/packages ${NIGHTLY_DIR}'"
+          command: ssh ${SSH_USER}@${SSH_HOST} "sh -c 'mv ~/packages ${NIGHTLY_DIR}/${NIGHTLY_PACKAGES}'"
