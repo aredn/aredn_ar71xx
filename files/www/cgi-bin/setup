@@ -436,10 +436,15 @@ if($parms{button_save})
 
     if($parms{nodedesc})
     {
-        # scrub for scripting injection
-        # push(@errors, "unable to store node description" ) if &uci_set_indexed_option("system", "system", "0", "description", $parms{nodedesc});
-        $rc = &uci_set_indexed_option("system", "system", "0", "description", "$parms{nodedesc}");
-        push(@errors, "unable to store node description. ($rc | $rc2") if($rc);
+        # scrub for tag injection
+        if($parms{nodedesc} =~ /<.*>|<\/.*>/) {
+            push(@errors, "Node description cannot contain html like tags")
+        }
+        else
+        {
+            $rc = &uci_set_indexed_option("system", "system", "0", "description", "$parms{nodedesc}");
+            push(@errors, "unable to store node description. ($rc | $rc2") if($rc);
+        }
     }
     unless(@errors)
     {
@@ -642,9 +647,7 @@ if(0)# disable for now
 print "
 </tr>
 <tr>
-<td>Node 
-
- (optional)</td>
+<td>Node Description (optional)</td>
 <td><input type='text' size='50' name='nodedesc' value='$nodedesc' tabindex='4'</input></td>";
 push @hidden, "<input type=hidden name=config value='mesh'>";
 print "
