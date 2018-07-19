@@ -119,7 +119,6 @@ else
     $nodetac = $parms{nodetac};
 }
 
-
 # make sure unchecked checkboxes are accounted for
 foreach(qw(lan_dhcp olsrd_bridge olsrd_gw wifi_hidden))
 {
@@ -436,7 +435,6 @@ if($parms{button_save})
 
     if($parms{nodedesc})
     {
-        # scrub for tag injection
         if($parms{nodedesc} =~ /<.*>|<\/.*>/) {
             push(@errors, "Node description cannot contain html like tags")
         }

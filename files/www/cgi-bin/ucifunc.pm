@@ -155,7 +155,7 @@ sub uci_get_all_indexed_by_sectiontype()
 }
 
 
-### UCI Helpers --ADD-- ###prin
+### UCI Helpers --ADD-- ###
 
 sub uci_add_sectiontype()
 {
@@ -258,15 +258,12 @@ sub uci_set_indexed_option()
     my ($config,$stype,$index,$option,$val)=@_;
     system `touch /etc/config/$config` if (! -f "/etc/config/$config");
     if (&uci_get_sectiontype_count($config,$stype) eq 0) {
-        print "!!! section count=0";
         my $rc=&uci_add_sectiontype($config,$stype);
-        # abort if error
         if ($rc) { return $rc};
     }
     my $cmd=sprintf('uci set %s.@%s[%s].%s="%s"',$config,$stype,$index,$option,$val);
     my $res=`$cmd`;
     my $rc=$?;
- 
     return $rc;
 }
 
