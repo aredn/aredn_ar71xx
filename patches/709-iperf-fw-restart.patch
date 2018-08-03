@@ -1,9 +1,9 @@
 --- a/package/network/utils/iperf/Makefile
 +++ b/package/network/utils/iperf/Makefile
-@@ -9,7 +9,7 @@
+@@ -12,7 +12,7 @@
  
  PKG_NAME:=iperf
- PKG_VERSION:=2.0.10
+ PKG_VERSION:=2.0.12
 -PKG_RELEASE:=1
 +PKG_RELEASE:=1AREDN
  
