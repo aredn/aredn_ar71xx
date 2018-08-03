@@ -1,15 +1,26 @@
---- a/package/network/utils/iperf/Makefile
-+++ b/package/network/utils/iperf/Makefile
-@@ -9,7 +9,7 @@
+Index: openwrt/package/network/utils/iperf/Makefile
+===================================================================
+--- openwrt.orig/package/network/utils/iperf/Makefile
++++ openwrt/package/network/utils/iperf/Makefile
+@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
  
  PKG_NAME:=iperf
- PKG_VERSION:=2.0.10
+ PKG_VERSION:=2.0.12
 -PKG_RELEASE:=1
 +PKG_RELEASE:=1AREDN
  
  PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
- PKG_HASH:=7fe4348dcca313b74e0aa9c34a8ccd713b84a5615b8578f4aa94cedce9891ef2
-@@ -46,6 +46,18 @@
+ PKG_HASH:=367f651fb1264b13f6518e41b8a7e08ce3e41b2a1c80e99ff0347561eed32646
+@@ -38,7 +38,7 @@ define Package/iperf/description
+ endef
+ 
+ TARGET_CFLAGS += -D_GNU_SOURCE
+-CONFIGURE_ARGS += --disable-multicast
++CONFIGURE_ARGS += --disable-multicast --disable-ipv6
+ 
+ CONFIGURE_VARS += CXXFLAGS="$$$$CXXFLAGS -fno-rtti"
+ CONFIGURE_VARS += LIBS="-lpthread -lm"
+@@ -46,6 +46,18 @@ CONFIGURE_VARS += LIBS="-lpthread -lm"
  define Package/iperf/install
  	$(INSTALL_DIR) $(1)/usr/bin
  	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/iperf $(1)/usr/bin/iperf
@@ -28,8 +39,10 @@
  endef
  
  $(eval $(call BuildPackage,iperf))
+Index: openwrt/package/network/utils/iperf/files/iperf.firewall
+===================================================================
 --- /dev/null
-+++ b/package/network/utils/iperf/files/iperf.firewall
++++ openwrt/package/network/utils/iperf/files/iperf.firewall
 @@ -0,0 +1,13 @@
 +#!/bin/sh
 +
