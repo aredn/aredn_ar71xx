@@ -2,6 +2,7 @@
 001-add_support_for_TP-Link_CPE210_v3.patch
 700-cpe210.patch
 002-firmware-check-fix.patch
+200-luasrcdiet-luci-build.patch
 701-extended-spectrum.patch
 702-enable-country-hx.patch
 703-fix-dnsmasq.patch
@@ -12,4 +13,3 @@
 708-define-aredn-vlans.patch
 709-iperf-fw-restart.patch
 710-no-ping6-traceroute6.patch
-200-luasrcdiet-luci-build.patch
