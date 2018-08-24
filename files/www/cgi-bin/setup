@@ -962,9 +962,6 @@ print <<EOF;
 function doSubmit() {
         var desc_text = document.mainForm.description_node.value;
         var singleLine = desc_text.replace(new RegExp( "\\n", "g" ), " ");
-        #singleLine = singleLine.replace(new RegExp ( "'", "g" ), "&apos;");
-        #singleLine = singleLine.replace(new RegExp ( "<", "g" ), "&lt;");
-        #singleLine = singleLine.replace(new RegExp ( ">", "g" ), "&gt;");
         document.mainForm.description_node.value = singleLine;
         return true;
 }
