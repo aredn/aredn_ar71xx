@@ -437,10 +437,6 @@ if($parms{button_save})
     {
 	$parms{node} = $node;
 	$parms{tactical} = $tactical;
-        $parms{description_node} =~ s/'/&apos;/g;
-        $parms{description_node} =~ s/</&lt;/g;
-        $parms{description_node} =~ s/>/&gt;/g;
-        $parms{description_node} = substr($parms{description_node}, 0, 210);
 	system "touch /tmp/unconfigured" if -f "/etc/config/unconfigured";
 	$rc = save_setup("/etc/config.mesh/_setup");
     $rc2 = &uci_commit("system");
@@ -966,9 +962,9 @@ print <<EOF;
 function doSubmit() {
         var desc_text = document.mainForm.description_node.value;
         var singleLine = desc_text.replace(new RegExp( "\\n", "g" ), " ");
-        singleLine = singleLine.replace(new RegExp ( "'", "g" ), "&apos;");
-        singleLine = singleLine.replace(new RegExp ( "<", "g" ), "&lt;");
-        singleLine = singleLine.replace(new RegExp ( ">", "g" ), "&gt;");
+        #singleLine = singleLine.replace(new RegExp ( "'", "g" ), "&apos;");
+        #singleLine = singleLine.replace(new RegExp ( "<", "g" ), "&lt;");
+        #singleLine = singleLine.replace(new RegExp ( ">", "g" ), "&gt;");
         document.mainForm.description_node.value = singleLine;
         return true;
 }
