@@ -253,7 +253,12 @@ $str .= "</nobr></td>";
 
 push @col2, $str;
 
-$olsrCount = "<th align='right'>OLSR Entries </th><td><nobr>" . `ip route list table 30 | wc -l` . "</td>";
+$olsrCount = "<th align='right'>OLSR Entries</th><td><nobr>Total = " .
+ `ip route list table 30 | wc -l` .
+ "<nobr><br><nobr>Nodes = " .
+ `ip route list table 30 | egrep "/" | wc -l` .
+ "<nobr></td>";
+
 push @col2, $olsrCount;
 
 # now print the tables

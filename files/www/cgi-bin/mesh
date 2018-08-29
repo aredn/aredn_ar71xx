@@ -319,7 +319,11 @@ print "<table id='node_description_display'><tr><td>$node_desc</td></tr></table>
 
 print "<hr><nobr>";
 
-print "<th align='right'><strong>OLSR Entries</strong> </th><td><nobr>" . `ip route list table 30 | wc -l` . "</td><br><br>";
+print "<table><th align='right'>OLSR Entries</th><td><nobr>Total = " .                                                                                                       
+ `ip route list table 30 | wc -l` .                                                                                          
+ "<nobr><br><nobr>Nodes = " .                                                                                                
+ `ip route list table 30 | egrep "/" | wc -l` .                                                                              
+ "<nobr></td></table>";
 
 # nav buttons
 if(-f "/tmp/web/automesh")
