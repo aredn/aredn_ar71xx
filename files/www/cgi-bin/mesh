@@ -102,6 +102,7 @@ system "mkdir -p /tmp/web";
 system "touch /tmp/web/automesh" if $parms{auto};
 system "rm -f /tmp/web/automesh" if $parms{stop};
 
+#get location info if available
 $lat_lon = "<strong>Location Not Available</strong>";
 if(-f "/etc/latlon") {
     $rcgood=open(FILE, "/etc/latlon");
@@ -113,9 +114,9 @@ if(-f "/etc/latlon") {
     close(FILE);
 	$lat_lon = "<center><strong>Location: </strong> $lat_lon[0] $lat_lon[1]</center>";
 }
-($olsrTotal = `ip route list table 30 | wc -l`);
-($olsrNodes = `ip route list table 30 | egrep "/" | wc -l`);
-($node_desc = `/sbin/uci get system.\@system[0].description`);
+($olsrTotal = `ip route list table 30 | wc -l`); #num hosts olsr is keeping track of
+($olsrNodes = `ip route list table 30 | egrep "/" | wc -l`); #num *nodes* on the network (minus other hosts)
+($node_desc = `/sbin/uci get system.\@system[0].description`); #pull the node description from uci
 
 # parse the txtinfo output
 
@@ -315,10 +316,10 @@ alert_banner();
 # page header
 print "<h1>$node mesh status</h1>";
 
-print "$lat_lon";
-print "<table id='node_description_display'><tr><td>$node_desc</td></tr></table>";
+print "$lat_lon"; #display lat lon info
+print "<table id='node_description_display'><tr><td>$node_desc</td></tr></table>"; #display nide description
 print "<hr><nobr>";
-print "<table><th align='right'>OLSR Entries</th><td><nobr>Total = $olsrTotal<nobr><br><nobr>Nodes = $olsrNodes<nobr></td></table>";
+print "<table><th align='right'>OLSR Entries</th><td><nobr>Total = $olsrTotal<nobr><br><nobr>Nodes = $olsrNodes<nobr></td></table>"; #display OLSR numbers
 
 # nav buttons
 if(-f "/tmp/web/automesh")
