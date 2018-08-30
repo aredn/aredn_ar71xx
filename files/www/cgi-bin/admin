@@ -70,9 +70,9 @@ if ( -e "/usr/sbin/vtund" && open(my $tuncfgfd, '/etc/config/vtun')) {
 
 
 if ( $tunnel_active ) {
-    read_postdata({acceptfile => false});
+    read_postdata({acceptfile => 'false'});
 } else {
-    read_postdata({acceptfile => true});
+    read_postdata({acceptfile => 'true'});
 }
 
 reboot_page("/cgi-bin/status") if $parms{button_reboot};
