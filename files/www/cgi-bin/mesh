@@ -106,10 +106,11 @@ system "rm -f /tmp/web/automesh" if $parms{stop};
 $lat_lon = "<strong>Location Not Available</strong>";
 if(-f "/etc/latlon") {
     $rcgood=open(FILE, "/etc/latlon");
-    push @errors, "ERROR: reading lat/lon data\n" unless $rcgood;
-    while(<FILE>){
-        chomp;
-        push @lat_lon,$_;
+    if($rcgood) {
+        while(<FILE>){
+            chomp;
+            push @lat_lon,$_;
+        }
     }
     close(FILE);
 	$lat_lon = "<center><strong>Location: </strong> $lat_lon[0] $lat_lon[1]</center>";
