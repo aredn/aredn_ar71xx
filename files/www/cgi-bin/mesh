@@ -90,7 +90,6 @@ $tactical = nvram_get("tactical");
 $config = nvram_get("config");
 $config = "not set" if $config eq "" or not -d "/etc/config.mesh";
 ($my_ip) = get_ip4_network(get_interface("wifi"));
-$node_desc = `/sbin/uci get system.\@system[0].description`;
 
 chomp ($chanbw = `cat /sys/kernel/debug/ieee80211/phy0/ath9k/chanbw`);
 if    ($chanbw eq "0x00000005") {$chanbw = 4;}
@@ -102,6 +101,21 @@ read_postdata();
 system "mkdir -p /tmp/web";
 system "touch /tmp/web/automesh" if $parms{auto};
 system "rm -f /tmp/web/automesh" if $parms{stop};
+
+$lat_lon = "<strong>Location Not Available</strong>";
+if(-f "/etc/latlon") {
+    $rcgood=open(FILE, "/etc/latlon");
+    push @errors, "ERROR: reading lat/lon data\n" unless $rcgood;
+    while(<FILE>){
+        chomp;
+        push @lat_lon,$_;
+    }
+    close(FILE);
+	$lat_lon = "<center><strong>Location: </strong> $lat_lon[0] $lat_lon[1]</center>";
+}
+($olsrTotal = `ip route list table 30 | wc -l`);
+($olsrNodes = `ip route list table 30 | egrep "/" | wc -l`);
+($node_desc = `/sbin/uci get system.\@system[0].description`);
 
 # parse the txtinfo output
 
@@ -301,29 +315,10 @@ alert_banner();
 # page header
 print "<h1>$node mesh status</h1>";
 
-if(-f "/etc/latlon") {
-    $rcgood=open(FILE, "/etc/latlon");
-    push @errors, "ERROR: reading lat/lon data\n" unless $rcgood;
-    while(<FILE>){
-        chomp;
-        push @lines,$_;
-    }
-    close(FILE);
-    $lat=$lines[0];
-    $lon=$lines[1];
-    print "<center><strong>Location Info</strong> $lat $lon</center>";
-} else {
-    print "<center><strong>Location Info Not Available</strong></center>";
-}
+print "$lat_lon";
 print "<table id='node_description_display'><tr><td>$node_desc</td></tr></table>";
-
 print "<hr><nobr>";
-
-print "<table><th align='right'>OLSR Entries</th><td><nobr>Total = " .                                                                                                       
- `ip route list table 30 | wc -l` .                                                                                          
- "<nobr><br><nobr>Nodes = " .                                                                                                
- `ip route list table 30 | egrep "/" | wc -l` .                                                                              
- "<nobr></td></table>";
+print "<table><th align='right'>OLSR Entries</th><td><nobr>Total = $olsrTotal<nobr><br><nobr>Nodes = $olsrNodes<nobr></td></table>";
 
 # nav buttons
 if(-f "/tmp/web/automesh")
