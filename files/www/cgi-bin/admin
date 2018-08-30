@@ -88,6 +88,13 @@ $parms{dev} = 1 if -e "/tmp/developer_mode";
 # set the wget command options
 $wget = "wget -U 'node: $node'";
 
+#get device name and firmware type
+$deviceName = `/usr/local/bin/get_model`;
+$fwType = `/usr/local/bin/get_hardwaretype`;
+#strip off "station" from "nanostation"
+#to match the actual name of the fw files
+$fwType =~ s/station//g;
+
 #
 # handle firmware updates
 #
@@ -582,7 +589,7 @@ if(@fw_output)
 }
 
 print "<tr><td align=center colspan=3>current version: $fw_version</td></tr>\n";
-
+print "<tr><td align=center colspan=3>This Device: $deviceName, requires firmware: $fwType</td><tr>";
 print "<tr>\n";
 print "<td>Upload Firmware</td>\n";
 print "<td><input type=file name=firmfile title='choose the firmware file to install from your hard drive'></td>\n";
