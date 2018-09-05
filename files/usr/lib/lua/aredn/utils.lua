@@ -141,6 +141,9 @@ function hardware_boardid()
 		if bfile~=nil then
 			bid=bfile:read()
 			bfile:close()
+			if bid=="0x0000" then	-- if Mikrotik
+				bid=capture("/usr/local/bin/get_boardid")
+			end
 		end
 	else
 		bid=capture("/usr/local/bin/get_boardid")
