@@ -200,7 +200,7 @@ function getOLSRInfo()
 	local info={}
 	tot=os.capture('/sbin/ip route list table 30|wc -l')
 	info['entries']=tot:chomp()
-	nodes=os.capture('/sbin/ip route list table 30|egrep "/"|wc -l')
+	nodes=os.capture('/sbin/ip route list table 30|grep -E "/"|wc -l')
 	info['nodes']=nodes:chomp()
 	return info
 end
