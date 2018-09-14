@@ -132,6 +132,15 @@ if($parms{button_refresh_fw})
 # and set $fw_version
 firmware_list_gen();
 
+# apply firmware previously copied to the node via SCP into /tmp/web/sideload_firmware.bin
+if($parms{button_apply_fw} and -f "/tmp/web/sideload_firmware.bin")
+{
+    system "mkdir -p /tmp/web/upload";
+    system "mv -f /tmp/web/sideload_firmware.bin /tmp/web/upload/file";
+    $parms{firmfile} = "arednmesh-sideload-sysupgrade.bin";
+    $parms{button_ul_fw}="Upload";
+    system("/usr/local/bin/uploadctlservices","upgrade");
+}
 
 # upload fw
 if($parms{button_ul_fw} and -f "/tmp/web/upload/file")
@@ -141,7 +150,6 @@ if($parms{button_ul_fw} and -f "/tmp/web/upload/file")
     if($parms{firmfile} =~ /sysupgrade\.bin$/) # full firmware
     {
 	$fw_install = 1;
-
     # drop the page cache to take pressure of tmps when checking the firmware
     `echo 3 > /proc/sys/vm/drop_caches`;
 	
@@ -588,6 +596,7 @@ print "<td>Upload Firmware</td>\n";
 print "<td><input type=file name=firmfile title='choose the firmware file to install from your hard drive'></td>\n";
 print "<td align=center><input type=submit name=button_ul_fw value=Upload title='install the firmware'";
 if($tunnel_active) { print " disabled"; };
+print ">&nbsp;<input type=submit name=button_apply_fw value='Apply Sideloaded Firmware' title='Apply previously loaded firmware'" if (-f "/tmp/web/sideload_firmware.bin");
 print "></td>\n";
 print "</tr>\n";
 
