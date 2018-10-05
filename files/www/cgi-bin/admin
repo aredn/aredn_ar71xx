@@ -105,6 +105,28 @@ $patch_install = 0;
 $hardwaretype = `/usr/local/bin/get_hardwaretype`;
 chomp($hardwaretype);
 
+# handle TPLink and Mikrotik exception conditions
+$mfg=`/usr/local/bin/get_hardware_mfg`;
+chomp($mfg);
+$mfgprefix="";
+if($mfg=~ /Ubiquiti/i)
+{
+    $mfgprefix="ubnt"; 
+} elsif($mfg=~ /Mikrotik/i) {
+    $mfgprefix="mikrotik";
+} elsif($mfg=~ /TP-Link/i) {
+    $mfgprefix="cpe";
+}
+
+if($hardwaretype eq "nanostation-m")
+{
+    $hardwaretype="nano-m";
+} elsif($hardwaretype eq "rb-952ui-5ac2nd") {
+    $hardwaretype= "rb-nor-flash-16M-ac" ;    # hAP AC Lite
+} elsif($hardwaretype =~ /rb-912uag-[25]hpnd/ ) {
+    $hardwaretype= "nand-large" ;    # Basebox 2/5
+}
+
 # refresh fw
 if($parms{button_refresh_fw})
 {
@@ -557,15 +579,12 @@ print <<EOF;
     <script>
     function validateFirmwareFilename(elem){
         var hwtype = "$hardwaretype";
-        if(hwtype=="nanostation-m") {
-            hwtype="nano-m";
-        } 
         var searchstring = ".*-" + hwtype + "-sysupgrade.bin$\";
         var re = new RegExp(searchstring,"g");   
         if(elem.value.match(re)){
             return true;
         }else{
-            if (confirm('This filename is NOT appropriate for this device!\\n\\nThis device expects a file such as: aredn-$fw_version-<MANUFACTURER>-' + hwtype + '-sysupgrade.bin\\n\\n\\nClick OK to continue if you are CERTAIN that the file is correct.')) {
+            if (confirm('This filename is NOT appropriate for this device!\\n\\nThis device expects a file such as: aredn-$fw_version-$mfgprefix-' + hwtype + '-sysupgrade.bin\\n\\n\\nClick OK to continue if you are CERTAIN that the file is correct.')) {
                 return true;
             } else {
                 elem.value="";
@@ -606,9 +625,8 @@ if(@fw_output)
 }
 
 print "<tr><td align=center colspan=3>current version: $fw_version</td></tr>\n";
-$hardwaretype=`/usr/local/bin/get_hardwaretype`;
-chomp($hardwaretype);
-print "<tr><td align=center colspan=3>hardware type: $hardwaretype</td></tr>\n";
+
+print "<tr><td align=center colspan=3>hardware type: $mfgprefix ($hardwaretype)</td></tr>\n";
 
 print "<tr>\n";
 print "<td>Upload Firmware</td>\n";
