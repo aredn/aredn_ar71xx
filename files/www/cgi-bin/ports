@@ -315,7 +315,7 @@ foreach $val (@list)
         if($olsrFile) {
           open(my $hostFile, "<", "/var/run/hosts_olsr");
           while(<$hostFile>) {
-            if($_ =~ /\t$host\t/) {
+            if($_ =~ /\s$host\s/i) {
               $foundHost = 1;
               last;
             }
