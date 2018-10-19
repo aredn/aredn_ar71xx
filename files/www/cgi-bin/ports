@@ -323,7 +323,7 @@ foreach $val (@list)
           close($hostFile);
           push(@dhcp_err, "$val <font color='red'>Warning!</font> '$host' is already in use!<br>" .
             "Please choose another hostname.<br>" .
-            "Prefixing the hostname with your callsign will <em>ensure</em> it is unique.") if $foundHost == 1;
+            "Prefixing the hostname with your callsign will help prevent duplicates on the network.") if $foundHost == 1;
         }
     }
     else
