@@ -309,6 +309,22 @@ foreach $val (@list)
                 last;
             }
         }
+        my $olsrFile = 0;
+        $olsrFile = 1 if -f "/var/run/hosts_olsr";
+        my $foundHost = 0;
+        if($olsrFile) {
+          open(my $hostFile, "<", "/var/run/hosts_olsr");
+          while(<$hostFile>) {
+            if($_ =~ /\t$host\t/) {
+              $foundHost = 1;
+              last;
+            }
+          }
+          close($hostFile);
+          push(@dhcp_err, "$val <font color='red'>Warning!</font> '$host' is already in use!<br>" .
+            "Please choose another hostname.<br>" .
+            "Prefixing the hostname with your callsign will <em>ensure</em> it is unique.") if $foundHost == 1;
+        }
     }
     else
     {
