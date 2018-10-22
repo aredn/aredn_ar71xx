@@ -1,0 +1,167 @@
+#!/usr/bin/perl
+=for comment
+
+  Part of AREDN -- Used for creating Amateur Radio Emergency Data Networks
+  Copyright (C) 2018 - Darryl Quinn
+   See Contributors file for additional contributors
+
+  Copyright (c) 2013 David Rivenburg et al. BroadBand-HamNet
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation version 3 of the License.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  Additional Terms:
+
+  Additional use restrictions exist on the AREDN(TM) trademark and logo.
+    See AREDNLicense.txt for more info.
+
+  Attributions to the AREDN Project must be retained in the source code.
+  If importing this code into a new or existing project attribution 
+  to the AREDN project must be added to the source code.
+
+  You must not misrepresent the origin of the material contained within.
+
+  Modified versions must be modified to attribute to the original source
+  and be marked in reasonable ways as differentiate it from the original
+  version.
+
+=cut
+
+BEGIN {push @INC, '/www/cgi-bin'};
+use perlfunc;
+
+$debug = 1;
+$| = 1;
+
+@setting = ();
+push @setting, {key => "system.\@map[0].maptiles", type => "string", desc => "", default => "" };
+push @setting, {key => "system.\@map[0].leafletcss", type => "string", desc => "", default => "" };
+push @setting, {key => "system.\@map[0].leafletjs", type => "string", desc => "", default => "" };
+push @setting, {key => "system.\@aredn[0].serverpath", type => "string", desc => "", default => "" };
+push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "", default => "0" };
+
+
+
+
+reboot_page("/cgi-bin/status") if $parms{button_reboot};
+read_postdata({acceptfile => false});
+$node = nvram_get("node");
+
+# make developer mode stick
+system "touch /tmp/developer_mode" if $parms{dev};
+$parms{dev} = 1 if -e "/tmp/developer_mode";
+
+#
+# process POSTED data
+#
+$scount = scalar @setting;
+for($i=0;$i<$scount;$i++)
+{
+  if($parms{eval "button_save_" . $i})
+  {
+    $newvalfield = eval "newval_" . $i;
+    $newval = $parms{$newvalfield};
+    #$cfgfile = /^(.*)\..*/g;
+    #push @msg, "CFGFILE=$cfgfile";
+    push @msg, "uci set @setting[$i]->{'key'} =\"$newval\"";
+    #system("uci set @setting[$i]=\"$newval\"");
+    #system("uci commit");
+    push @msg, "Changed @setting[$i]->{'key'}";
+    last;
+  }
+}
+
+#if($parms{button_save_0})
+# if $parms{button_save_0} then
+#   get @setting[0]
+#   uci set @setting[0]=$parms{value_0}
+#   uci commit
+#   uci save to /etc/config.mesh/@setting file   (AREDN config.mesh)
+
+
+#
+# generate the page
+#
+
+http_header();
+html_header("$node Advanced Configuration", 1);
+
+print "<body><center>\n";
+alert_banner();
+print "<div style=\"padding:5px;background-color:#FF0000;border:1px solid #ccc;width:600px;\">Changing these advanced settings can be harmful to the stability, security, and performance of this node.  You should only continue if you are sure what you are doing.</a></div>\n";
+print "<form method=post action=advancedconfig enctype='multipart/form-data'>\n";
+print "<table width=790>\n";
+print "<tr><td>\n";
+navbar("advancedconfig");
+print "</td></tr>\n";
+
+print "<tr><td align=center><a href='/help.html#admin' target='_blank'>Help</a>&nbsp;&nbsp;";
+print "<input type=submit name=button_reboot value=Reboot style='font-weight:bold' title='Immediately reboot this node'>";
+print "</td></tr>\n";
+
+if(@msg)
+{
+  foreach(@msg)
+  {
+    print "<tr><td align='center'><strong>$_</strong></td></tr>\n";
+  }
+}
+
+print "<tr><td align=center>\n";
+print "<table border=1>\n";
+print <<EOF;
+    <thead>
+        <th>Config Setting</th>
+        <th>Current Value</th>
+        <th>New Value</th>
+        <th>Action</th>
+    </thead>
+EOF
+
+$scount = 0;
+foreach(@setting)
+{
+  $sconfig = $_->{'key'};
+  $sval = `uci get $sconfig`;
+  # chomp($sval);
+  # setting_value= uci get value of $_
+  print <<EOF;
+      <tr>
+          <td>$sconfig</td>
+          <td>$sval</td>
+          <td>
+EOF
+
+  print "<input type='text' name='newval_$scount'>" if(@setting[$scount]->{'type'} eq "string");
+  print "<input type='checkbox' name='newval_$scount' value='1' >" if(@setting[$scount]->{'type'} eq "boolean");
+
+  print <<EOF;
+          </td>
+          <td><input type="submit" name="button_save_$scount" value="Save" /></td>
+      </tr>
+EOF
+  $scount++;  
+}
+
+print "</table>\n";
+print "</td></tr>\n";
+print "</table>\n";
+
+print "</form>\n";
+print "</center>\n";
+
+show_debug_info();
+show_parse_errors();
+
+page_footer();
+print "</body>\n";
+print "</html>\n";
