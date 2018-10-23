@@ -51,6 +51,11 @@ push @setting, {key => "system.\@aredn[0].serverpath", type => "string", desc =>
 push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "Disable all wan access on this node.  No traffic will be routed to the default gateway.", default => "0" };
 # ----------------------------------------
 
+if($parms{button_firstboot})
+{
+    system "firstboot -y";
+    reboot_page("/cgi-bin/status");
+}
 
 reboot_page("/cgi-bin/status") if $parms{button_reboot};
 read_postdata({acceptfile => false});
@@ -107,6 +112,7 @@ print "</td></tr>\n";
 
 print "<tr><td align=center><a href='/help.html#admin' target='_blank'>Help</a>&nbsp;&nbsp;";
 print "<input type=submit name=button_reboot value=Reboot style='font-weight:bold' title='Immediately reboot this node'>";
+print "&nbsp;&nbsp;<input type=submit name=button_firstboot value='Reset to Firstboot' onclick=\"return confirm('All config settings and add-on packages will be lost back to first boot state. Continue?')\"  title='Reset this node to the initial/firstboot status and reboot.'>";
 print "</td></tr>\n";
 
 if(@msg)
