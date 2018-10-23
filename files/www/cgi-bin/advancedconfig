@@ -39,17 +39,17 @@
 BEGIN {push @INC, '/www/cgi-bin'};
 use perlfunc;
 
-$debug = 1;
+$debug = 0;
 $| = 1;
 
+# ---------------------------------------- ADVANCED CONFIG ALLOWED UCI VALUES ------------------
 @setting = ();
-push @setting, {key => "system.\@map[0].maptiles", type => "string", desc => "", default => "" };
-push @setting, {key => "system.\@map[0].leafletcss", type => "string", desc => "", default => "" };
-push @setting, {key => "system.\@map[0].leafletjs", type => "string", desc => "", default => "" };
-push @setting, {key => "system.\@aredn[0].serverpath", type => "string", desc => "", default => "" };
-push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "", default => "0" };
-
-
+push @setting, {key => "system.\@map[0].maptiles", type => "string", desc => "Specifies the URL of the location to access map tiles", default => "http://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiazVkbHEiLCJhIjoiY2lqMnlieTM4MDAyNXUwa3A2eHMxdXE3MiJ9.BRFvx4q2vi70z5Uu2zRYQw" };
+push @setting, {key => "system.\@map[0].leafletcss", type => "string", desc => "Specifies the URL of the leaflet.css file", default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" };
+push @setting, {key => "system.\@map[0].leafletjs", type => "string", desc => "Specifies the URL of the leaflet.js file", default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" };
+push @setting, {key => "system.\@aredn[0].serverpath", type => "string", desc => "Specifies the URL of the location from which firmware files will be downloaded.", default => "http://downloads.arednmesh.org/firmware/ubnt" };
+push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "Disable all wan access on this node.  No traffic will be routed to the default gateway.", default => "0" };
+# ----------------------------------------
 
 
 reboot_page("/cgi-bin/status") if $parms{button_reboot};
@@ -68,25 +68,26 @@ for($i=0;$i<$scount;$i++)
 {
   if($parms{eval "button_save_" . $i})
   {
-    $newvalfield = eval "newval_" . $i;
-    $newval = $parms{$newvalfield};
-    #$cfgfile = /^(.*)\..*/g;
-    #push @msg, "CFGFILE=$cfgfile";
-    push @msg, "uci set @setting[$i]->{'key'} =\"$newval\"";
-    #system("uci set @setting[$i]=\"$newval\"");
-    #system("uci commit");
-    push @msg, "Changed @setting[$i]->{'key'}";
+    $newvalfield=eval "newval_" . $i;
+    $newval=$parms{$newvalfield};
+    $newval=~ s/^\s+|\s+$//;
+    # $newval="" if(@setting[$i]->{'type'} eq "boolean") and !$newval;
+    $newval="1" if(@setting[$i]->{'type'} eq "boolean") and $newval;
+    $key=@setting[$i]->{'key'};
+    @x=split(/\./, @setting[$i]->{'key'});
+    $cfgfile=@x[0];
+    # set "live" settings
+    system("uci set $key=\"$newval\"");
+    system("uci commit $cfgfile");
+    
+    # set AREDN config settings (used after a "Save Settings" on the Setup page)
+    system("uci -S -c /etc/config.mesh set $key=\"$newval\"");
+    system("uci -S -c /etc/config.mesh commit $cfgfile");
+
+    push @msg, "Changed $key";
     last;
   }
 }
-
-#if($parms{button_save_0})
-# if $parms{button_save_0} then
-#   get @setting[0]
-#   uci set @setting[0]=$parms{value_0}
-#   uci commit
-#   uci save to /etc/config.mesh/@setting file   (AREDN config.mesh)
-
 
 #
 # generate the page
@@ -97,7 +98,7 @@ html_header("$node Advanced Configuration", 1);
 
 print "<body><center>\n";
 alert_banner();
-print "<div style=\"padding:5px;background-color:#FF0000;border:1px solid #ccc;width:600px;\">Changing these advanced settings can be harmful to the stability, security, and performance of this node.  You should only continue if you are sure what you are doing.</a></div>\n";
+print "<div style=\"padding:5px;background-color:#FF0000;border:1px solid #ccc;width:600px;\">Changing these advanced settings can be harmful to the stability, security, and performance of this node and potentially the entire mesh network.<br><strong>You should only continue if you are sure of what you are doing.</strong></a></div>\n";
 print "<form method=post action=advancedconfig enctype='multipart/form-data'>\n";
 print "<table width=790>\n";
 print "<tr><td>\n";
@@ -120,10 +121,12 @@ print "<tr><td align=center>\n";
 print "<table border=1>\n";
 print <<EOF;
     <thead>
+      <tr>
+        <th>Help (hover)</th>
         <th>Config Setting</th>
-        <th>Current Value</th>
-        <th>New Value</th>
-        <th>Action</th>
+        <th>Current/New Value</th>
+        <th colspan="2">Actions</th>
+      </tr>
     </thead>
 EOF
 
@@ -132,21 +135,25 @@ foreach(@setting)
 {
   $sconfig = $_->{'key'};
   $sval = `uci get $sconfig`;
-  # chomp($sval);
-  # setting_value= uci get value of $_
   print <<EOF;
       <tr>
+          <td><span title="@setting[$scount]->{'desc'}"><img src="/qmark.png" /></span></td>
           <td>$sconfig</td>
-          <td>$sval</td>
           <td>
 EOF
+  print "$sval" if(@setting[$scount]->{'type'} eq "string");
+  print "ON" if(@setting[$scount]->{'type'} eq "boolean" and $sval);
+  print "OFF" if(@setting[$scount]->{'type'} eq "boolean" and !$sval);
 
-  print "<input type='text' name='newval_$scount'>" if(@setting[$scount]->{'type'} eq "string");
-  print "<input type='checkbox' name='newval_$scount' value='1' >" if(@setting[$scount]->{'type'} eq "boolean");
+  print "<br />";
+
+  print "<input type='text' id='field_$scount' name='newval_$scount' size='100'>" if(@setting[$scount]->{'type'} eq "string");
+  print "<input type='checkbox' id='field_$scount' name='newval_$scount' value='1' >" if(@setting[$scount]->{'type'} eq "boolean");
 
   print <<EOF;
           </td>
           <td><input type="submit" name="button_save_$scount" value="Save" /></td>
+          <td><input value="Set to Default" type="button" onclick="document.getElementById('field_$scount').value='@setting[$scount]->{'default'}';"></td>
       </tr>
 EOF
   $scount++;  
