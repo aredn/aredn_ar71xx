@@ -76,7 +76,6 @@ for($i=0;$i<$scount;$i++)
     $newvalfield=eval "newval_" . $i;
     $newval=$parms{$newvalfield};
     $newval=~ s/^\s+|\s+$//;
-    # $newval="" if(@setting[$i]->{'type'} eq "boolean") and !$newval;
     $newval="1" if(@setting[$i]->{'type'} eq "boolean") and $newval;
     $key=@setting[$i]->{'key'};
     @x=split(/\./, @setting[$i]->{'key'});
@@ -143,7 +142,7 @@ foreach(@setting)
   $sval = `uci get $sconfig`;
   print <<EOF;
       <tr>
-          <td><span title="@setting[$scount]->{'desc'}"><img src="/qmark.png" /></span></td>
+          <td align="center"><span title="@setting[$scount]->{'desc'}"><img src="/qmark.png" /></span></td>
           <td>$sconfig</td>
           <td>
 EOF
