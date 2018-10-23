@@ -48,7 +48,7 @@ push @setting, {key => "system.\@map[0].maptiles", type => "string", desc => "Sp
 push @setting, {key => "system.\@map[0].leafletcss", type => "string", desc => "Specifies the URL of the leaflet.css file", default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" };
 push @setting, {key => "system.\@map[0].leafletjs", type => "string", desc => "Specifies the URL of the leaflet.js file", default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" };
 push @setting, {key => "system.\@aredn[0].serverpath", type => "string", desc => "Specifies the URL of the location from which firmware files will be downloaded.", default => "http://downloads.arednmesh.org/firmware/ubnt" };
-push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "Disable all wan access on this node.  No traffic will be routed to the default gateway.", default => "0" };
+#push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "Disable all wan access on this node.  No traffic will be routed to the default gateway.", default => "0" };
 # ----------------------------------------
 
 if($parms{button_firstboot})
@@ -128,10 +128,10 @@ print "<table border=1>\n";
 print <<EOF;
     <thead>
       <tr>
-        <th>Help (hover)</th>
+        <th>Help<br><small>(hover)</small></th>
         <th>Config Setting</th>
         <th>Current/New Value</th>
-        <th colspan="2">Actions</th>
+        <th>Actions</th>
       </tr>
     </thead>
 EOF
@@ -153,13 +153,13 @@ EOF
 
   print "<br />";
 
-  print "<input type='text' id='field_$scount' name='newval_$scount' size='100'>" if(@setting[$scount]->{'type'} eq "string");
+  print "<input type='text' id='field_$scount' name='newval_$scount' size='65'>" if(@setting[$scount]->{'type'} eq "string");
   print "<input type='checkbox' id='field_$scount' name='newval_$scount' value='1' >" if(@setting[$scount]->{'type'} eq "boolean");
 
   print <<EOF;
           </td>
-          <td><input type="submit" name="button_save_$scount" value="Save" /></td>
-          <td><input value="Set to Default" type="button" onclick="document.getElementById('field_$scount').value='@setting[$scount]->{'default'}';"></td>
+          <td align="center"><input type="submit" name="button_save_$scount" value="Save Setting" /><br><br>
+          <input value="Set to Default" type="button" onclick="document.getElementById('field_$scount').value='@setting[$scount]->{'default'}';"></td>
       </tr>
 EOF
   $scount++;  
