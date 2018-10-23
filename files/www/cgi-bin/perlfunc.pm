@@ -87,7 +87,7 @@ sub navbar
                 vpn    => "Tunnel<br>Server",
                 vpnc   => "Tunnel<br>Client",
                 admin  => "Administration",
-                advancedconfig  => "Advanced<br>Config");
+                advancedconfig  => "Advanced<br>Configuration");
 
   #my($active_bg, $active_fg);
   #if(-f "/tmp/.night") { $active_bg = "red";   $active_fg = "black" }
