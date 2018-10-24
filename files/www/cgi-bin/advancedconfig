@@ -117,12 +117,12 @@ for($i=0;$i<$scount;$i++)
     eval @setting[$i]->{'precallback'} if(@setting[$i]->{'precallback'});
 
     # set "live" settings
-    system("uci set $key=\"$newval\"");
-    system("uci commit $cfgfile");
+    system("uci set '$key=$newval'");
+    system("uci commit '$cfgfile'");
     
     # set AREDN config settings (used after a "Save Settings" on the Setup page)
-    system("uci -S -c /etc/config.mesh set $key=\"$newval\"");
-    system("uci -S -c /etc/config.mesh commit $cfgfile");
+    system("uci -S -c /etc/config.mesh set '$key=$newval'");
+    system("uci -S -c /etc/config.mesh commit '$cfgfile'");
     
     push @msg, "Changed $key";
 
@@ -179,7 +179,7 @@ $scount = 0;
 foreach(@setting)
 {
   $sconfig = $_->{'key'};
-  $sval = `uci get $sconfig`;
+  $sval = `uci get '$sconfig'`;
   print <<EOF;
       <tr>
           <td align="center"><span title="@setting[$scount]->{'desc'}"><img src="/qmark.png" /></span></td>
