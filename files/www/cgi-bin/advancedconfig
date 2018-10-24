@@ -44,12 +44,44 @@ $| = 1;
 
 # ---------------------------------------- ADVANCED CONFIG ALLOWED UCI VALUES ------------------
 @setting = ();
-push @setting, {key => "system.\@map[0].maptiles", type => "string", desc => "Specifies the URL of the location to access map tiles", default => "http://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiazVkbHEiLCJhIjoiY2lqMnlieTM4MDAyNXUwa3A2eHMxdXE3MiJ9.BRFvx4q2vi70z5Uu2zRYQw" };
-push @setting, {key => "system.\@map[0].leafletcss", type => "string", desc => "Specifies the URL of the leaflet.css file", default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" };
-push @setting, {key => "system.\@map[0].leafletjs", type => "string", desc => "Specifies the URL of the leaflet.js file", default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" };
-push @setting, {key => "system.\@aredn[0].serverpath", type => "string", desc => "Specifies the URL of the location from which firmware files will be downloaded.", default => "http://downloads.arednmesh.org/firmware/ubnt" };
-#push @setting, {key => "system.\@aredn[0].blockwanaccess", type => "boolean", desc => "Disable all wan access on this node.  No traffic will be routed to the default gateway.", default => "0" };
+push @setting, {
+  key => "system.\@map[0].maptiles", 
+  type => "string", 
+  desc => "Specifies the URL of the location to access map tiles", 
+  default => "http://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiazVkbHEiLCJhIjoiY2lqMnlieTM4MDAyNXUwa3A2eHMxdXE3MiJ9.BRFvx4q2vi70z5Uu2zRYQw"
+};
+push @setting, {
+  key => "system.\@map[0].leafletcss", 
+  type => "string", 
+  desc => "Specifies the URL of the leaflet.css file", 
+  default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css"
+};
+push @setting, {
+  key => "system.\@map[0].leafletjs", 
+  type => "string", 
+  desc => "Specifies the URL of the leaflet.js file", 
+  default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" 
+};
+push @setting, {
+  key => "system.\@aredn[0].serverpath", 
+  type => "string", 
+  desc => "Specifies the URL of the location from which firmware files will be downloaded.", 
+  default => "http://downloads.arednmesh.org/firmware/ubnt", 
+  #precallback => "testpre()",
+  #postcallback => "testpost()"
+};
 # ----------------------------------------
+
+# ----- CALLBACKS ----------
+#sub testpre()
+#{
+#    push @msg, "TESTPRE callback executed";
+#}
+#sub testpost()
+#{
+#    push @msg, "TESTPOST callback executed";
+#}
+# ----- CALLBACKS ----------
 
 if($parms{button_firstboot})
 {
@@ -80,6 +112,10 @@ for($i=0;$i<$scount;$i++)
     $key=@setting[$i]->{'key'};
     @x=split(/\./, @setting[$i]->{'key'});
     $cfgfile=@x[0];
+
+    # run precallbacks
+    eval @setting[$i]->{'precallback'} if(@setting[$i]->{'precallback'});
+
     # set "live" settings
     system("uci set $key=\"$newval\"");
     system("uci commit $cfgfile");
@@ -87,8 +123,12 @@ for($i=0;$i<$scount;$i++)
     # set AREDN config settings (used after a "Save Settings" on the Setup page)
     system("uci -S -c /etc/config.mesh set $key=\"$newval\"");
     system("uci -S -c /etc/config.mesh commit $cfgfile");
-
+    
     push @msg, "Changed $key";
+
+    # run postcallbacks
+    eval @setting[$i]->{'postcallback'} if(@setting[$i]->{'postcallback'});
+
     last;
   }
 }
@@ -109,7 +149,7 @@ print "<tr><td>\n";
 navbar("advancedconfig");
 print "</td></tr>\n";
 
-print "<tr><td align=center><a href='/help.html#admin' target='_blank'>Help</a>&nbsp;&nbsp;";
+print "<tr><td align=center><a href='/help.html#advancedconfig' target='_blank'>Help</a>&nbsp;&nbsp;";
 print "<input type=submit name=button_reboot value=Reboot style='font-weight:bold' title='Immediately reboot this node'>";
 print "&nbsp;&nbsp;<input type=submit name=button_firstboot value='Reset to Firstboot' onclick=\"return confirm('All config settings and add-on packages will be lost back to first boot state. Continue?')\"  title='Reset this node to the initial/firstboot status and reboot.'>";
 print "</td></tr>\n";
