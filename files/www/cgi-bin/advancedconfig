@@ -45,25 +45,25 @@ $| = 1;
 # ---------------------------------------- ADVANCED CONFIG ALLOWED UCI VALUES ------------------
 @setting = ();
 push @setting, {
-  key => "system.\@map[0].maptiles", 
+  key => "aredn.\@map[0].maptiles", 
   type => "string", 
   desc => "Specifies the URL of the location to access map tiles", 
   default => "http://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiazVkbHEiLCJhIjoiY2lqMnlieTM4MDAyNXUwa3A2eHMxdXE3MiJ9.BRFvx4q2vi70z5Uu2zRYQw"
 };
 push @setting, {
-  key => "system.\@map[0].leafletcss", 
+  key => "aredn.\@map[0].leafletcss", 
   type => "string", 
   desc => "Specifies the URL of the leaflet.css file", 
   default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css"
 };
 push @setting, {
-  key => "system.\@map[0].leafletjs", 
+  key => "aredn.\@map[0].leafletjs", 
   type => "string", 
   desc => "Specifies the URL of the leaflet.js file", 
   default => "http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js" 
 };
 push @setting, {
-  key => "system.\@aredn[0].serverpath", 
+  key => "aredn.\@downloads[0].firmwarepath", 
   type => "string", 
   desc => "Specifies the URL of the location from which firmware files will be downloaded.", 
   default => "http://downloads.arednmesh.org/firmware/ubnt", 

@@ -464,9 +464,9 @@ $desc = &uci_get_indexed_option("system", "system", 0, "description");
 # Retreive map url, css, and js locations
 #
 my ($rc, $maptiles, $leafletcss, $leafletjs);
-($rc, $maptiles)=&uci_get_indexed_option("system","map",0,"maptiles");
-($rc, $leafletcss)=&uci_get_indexed_option("system","map",0,"leafletcss");
-($rc, $leafletjs)=&uci_get_indexed_option("system","map",0,"leafletjs");
+($rc, $maptiles)=&uci_get_indexed_option("aredn","map",0,"maptiles");
+($rc, $leafletcss)=&uci_get_indexed_option("aredn","map",0,"leafletcss");
+($rc, $leafletjs)=&uci_get_indexed_option("aredn","map",0,"leafletjs");
 
 #
 # generate the page

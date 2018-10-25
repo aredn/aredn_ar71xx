@@ -99,7 +99,7 @@ $patch_install = 0;
 %fw_md5 = ();
 
 @serverpaths = ();
-$uciserverpath=`uci get system.\@aredn[0].serverpath`;
+$uciserverpath=`uci get aredn.\@downloads[0].firmwarepath`;
 chomp($uciserverpath);
 push @serverpaths, $uciserverpath;
 
