@@ -108,13 +108,13 @@ for($i=0;$i<$scount;$i++)
     $newvalfield=eval "newval_" . $i;
     $newval=$parms{$newvalfield};
     $newval=~ s/^\s+|\s+$//;
-    $newval="1" if(@setting[$i]->{'type'} eq "boolean") and $newval;
-    $key=@setting[$i]->{'key'};
-    @x=split(/\./, @setting[$i]->{'key'});
-    $cfgfile=@x[0];
+    $newval="1" if($setting[$i]->{'type'} eq "boolean") and $newval;
+    $key=$setting[$i]->{'key'};
+    @x=split(/\./, $setting[$i]->{'key'});
+    $cfgfile=$x[0];
 
     # run precallbacks
-    eval @setting[$i]->{'precallback'} if(@setting[$i]->{'precallback'});
+    eval $setting[$i]->{'precallback'} if($setting[$i]->{'precallback'});
 
     # set "live" settings
     system("uci set '$key=$newval'");
@@ -127,7 +127,7 @@ for($i=0;$i<$scount;$i++)
     push @msg, "Changed $key";
 
     # run postcallbacks
-    eval @setting[$i]->{'postcallback'} if(@setting[$i]->{'postcallback'});
+    eval $setting[$i]->{'postcallback'} if($setting[$i]->{'postcallback'});
 
     last;
   }
@@ -182,23 +182,23 @@ foreach(@setting)
   $sval = `uci get '$sconfig'`;
   print <<EOF;
       <tr>
-          <td align="center"><span title="@setting[$scount]->{'desc'}"><img src="/qmark.png" /></span></td>
+          <td align="center"><span title="$setting[$scount]->{'desc'}"><img src="/qmark.png" /></span></td>
           <td>$sconfig</td>
           <td>
 EOF
-  print "$sval" if(@setting[$scount]->{'type'} eq "string");
-  print "ON" if(@setting[$scount]->{'type'} eq "boolean" and $sval);
-  print "OFF" if(@setting[$scount]->{'type'} eq "boolean" and !$sval);
+  print "$sval" if($setting[$scount]->{'type'} eq "string");
+  print "ON" if($setting[$scount]->{'type'} eq "boolean" and $sval);
+  print "OFF" if($setting[$scount]->{'type'} eq "boolean" and !$sval);
 
   print "<br />";
 
-  print "<input type='text' id='field_$scount' name='newval_$scount' size='65'>" if(@setting[$scount]->{'type'} eq "string");
-  print "<input type='checkbox' id='field_$scount' name='newval_$scount' value='1' >" if(@setting[$scount]->{'type'} eq "boolean");
+  print "<input type='text' id='field_$scount' name='newval_$scount' size='65'>" if($setting[$scount]->{'type'} eq "string");
+  print "<input type='checkbox' id='field_$scount' name='newval_$scount' value='1' >" if($setting[$scount]->{'type'} eq "boolean");
 
   print <<EOF;
           </td>
           <td align="center"><input type="submit" name="button_save_$scount" value="Save Setting" /><br><br>
-          <input value="Set to Default" type="button" onclick="document.getElementById('field_$scount').value='@setting[$scount]->{'default'}';"></td>
+          <input value="Set to Default" type="button" onclick="document.getElementById('field_$scount').value='$setting[$scount]->{'default'}';"></td>
       </tr>
 EOF
   $scount++;  
