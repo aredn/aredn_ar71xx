@@ -66,21 +66,24 @@ push @setting, {
   key => "aredn.\@downloads[0].firmwarepath", 
   type => "string", 
   desc => "Specifies the URL of the location from which firmware files will be downloaded.", 
-  default => "http://downloads.arednmesh.org/firmware/ubnt", 
-  #precallback => "testpre()",
-  #postcallback => "testpost()"
+  default => "http://downloads.arednmesh.org/firmware/ubnt"
+};
+push @setting, {
+  key => "system.\@aredn[0].poe_passthrough", 
+  type => "boolean", 
+  desc => "Specifies whether a PoE passthrough port should be on or off.  (Not all devices have PoE passthrough ports.", 
+  default => "0", 
+  postcallback => "setPOEOutput()"
 };
 # ----------------------------------------
 
 # ----- CALLBACKS ----------
-#sub testpre()
-#{
-#    push @msg, "TESTPRE callback executed";
-#}
-#sub testpost()
-#{
-#    push @msg, "TESTPOST callback executed";
-#}
+sub setPOEOutput()
+{
+  system("/usr/local/bin/poe_passthrough $newval");
+}
+
+
 # ----- CALLBACKS ----------
 
 if($parms{button_firstboot})
