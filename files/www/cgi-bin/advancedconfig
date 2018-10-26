@@ -80,7 +80,8 @@ push @setting, {
 # ----- CALLBACKS ----------
 sub setPOEOutput()
 {
-  system("/usr/local/bin/poe_passthrough $newval");
+  $newval="0" if(!$newval);
+  system("/usr/local/bin/poe_passthrough",$newval);
 }
 
 
