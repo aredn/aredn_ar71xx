@@ -69,7 +69,7 @@ push @setting, {
   default => "http://downloads.arednmesh.org/firmware/ubnt"
 };
 push @setting, {
-  key => "aredn.\@poe[0].poe_passthrough", 
+  key => "aredn.\@poe[0].passthrough", 
   type => "boolean", 
   desc => "Specifies whether a PoE passthrough port should be on or off.  (Not all devices have PoE passthrough ports.", 
   default => "0", 
