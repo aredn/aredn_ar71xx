@@ -40,7 +40,7 @@ if [ -z "$newval" ]; then
   exit 2
 fi
 
-export pinnum=`cat /etc/board.json|jsonfilter -e '@.gpioswitch.usb_power_switch.pin'`
+export pinnum=$(jsonfilter -e '@.gpioswitch.usb_power_switch.pin' < /etc/board.json)
 if [ -z "$pinnum" ]; then
   echo "There are NO controllable USB ports defined for this device"
   exit 1
