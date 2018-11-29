@@ -5,20 +5,24 @@ http://www.arednmesh.org
 ## About AREDN
 
 AREDN wireless networks are deployed by licensed Amateur Radio
-operators typically in frequencies reserved adjacent
-to and outside, in the US FCC part 15, unlicensed allocations.
-The firmware created below enables the effective use of valuable and dedicated
-frequencies for communication services to government and other
-entities in times of disaster or other emergencies. 
+operators, Technician Class or higher, under FCC Part 97 allocations
+adjacent to FCC part 15, unlicensed, WIFI, allocations. They are
+configured as ad-hoc nodes to form mesh networks.  The firmware
+created below enables the effective use of valuable and dedicated
+frequencies for communication services to government and private
+relief organizations in times of disaster or other emergencies.
 
 Amateur Radio frequencies are relatively clean of noise from the commercial
 allocations and ensure usability for Amateur Radio Operators.  This firmware
 enables 802.11n wireless networks to be created and expanded with minimal 
 to no pre-planning or IT expertise.  A user can deploy a 'node' anywhere
 to connect in and extend an AREDN network.  Device hardware options exist to
-provide sector coverage, build point-to-point links, and enable end users
-to connect in.  High speed link rates are routinely achieved over long 
-distances, e.g. 60Mbps+ on 10MHz channels over 80km links. 
+provide sector coverage, build point-to-point links, and connect end
+point services to the network. High speed link rates are routinely achieved
+over long distances, e.g. 60Mbps+ on 10MHz channels over 80km links. 
+
+For further information on obtaining an Amateur Radio Technician Class
+license, please refer to http://www.arrl.org/getting-your-technician-license
 
 ## Usage Information
 
@@ -43,6 +47,9 @@ Here is a summary of significant features added since 3.18.9.0
 was released:
 
 * Locked to Openwrt 18.06.1
+* Added RBLHG-5nD, RBLHG-5HPnD-XL, LBE-M5
+* Standardized NS M2/M5 XW Ethernet port functionality
+* Enabled 5GHz LAN Access Point on hAP ac lite
 
 Please refer to https://github.com/aredn/aredn_ar71xx/issues
 for a list of outstanding defects.
@@ -95,9 +102,9 @@ Latest Mikrotik installation options are found at: https://www.arednmesh.org/con
 The standard Ethernet port of an AREDN device uses the following vlan tags.  An 802.1Q
 switch is necessary to utilize the vlan tagged networks:
 
-untagged:  LAN devices - laptop, ipcam, voip phone, etc.
-vlan 1:  WAN - gateway to connect AREDN network to home network and/or internet
-vlan 2:  DtDLink (device to device) - AREDN network routing between nodes, typically cross band
+* untagged:  LAN devices - laptop, ipcam, voip phone, etc.
+* vlan 1:  WAN - gateway to connect AREDN network to home network and/or internet
+* vlan 2:  DtDLink (device to device) - AREDN network routing between nodes, typically cross band
 
 The following devices have a peculiar port configuration due to a limitation in the Ethernet driver.
 The 'Main" port is used for LAN devices only.  The "Secondary" port is WAN and DtDLink usage
@@ -108,12 +115,18 @@ only. Depending on deployed usage, 2 cat5 cables may be needed.
 
 The following devices have enhanced Ethernet port usage.  A single cat5 to the device
 could be plugged into ether the 'main' or 'secondary' port with standard port functionality.
-However, if both ports are used, a LAN device on one port is unable to communicate with a LAN
-device on the other port.  If another mesh node is connected to the secondary port, Then 
-the LAN DHCP should be turned off on that node to avoid IP address failures.
+Both ports can be used interchangeably and simultaneously with LAN devices on both ports
+at the same time. POE PassThough can be turned on in Advanced Settings to power ipCams or
+other mesh nodes.
 
 * NanoStation M5 XW
 * NanoStation M2 XW
+
+The following devices have standard Main ports and non-functional Secondary Ports
+
+* NanoStation M2 XM
+* NanoStation M3 XM
+* NanoStation M5 XM
 
 ## Submitting Bug Reports
 
