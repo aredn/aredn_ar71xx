@@ -38,7 +38,7 @@ require("uci")
 require("aredn.uci")
 require("aredn.utils")
 require("aredn.http")
-local ArednInfo = require("aredn.info")
+local aredn_info = require("aredn.info")
 require("nixio")
 local json = require("luci.jsonc")
 
@@ -48,44 +48,44 @@ os.capture = capture
 
 function getSysinfo()
 	local info={}
-	info['node']=ArednInfo.getNodeName()
-	info['description']=ArednInfo.getNodeDescription()
-	info['firmware_version']=ArednInfo.getFirmwareVersion()
-	info['model']=ArednInfo.getModel()
+	info['node']=aredn_info.getNodeName()
+	info['description']=aredn_info.getNodeDescription()
+	info['firmware_version']=aredn_info.getFirmwareVersion()
+	info['model']=aredn_info.getModel()
 	--
-	info['date']=ArednInfo.getDate()
-	info['time']=ArednInfo.getTime()
+	info['date']=aredn_info.getDate()
+	info['time']=aredn_info.getTime()
 	--
-	info['uptime']=ArednInfo.getUptime()
-	info['loads']=ArednInfo.getLoads()
+	info['uptime']=aredn_info.getUptime()
+	info['loads']=aredn_info.getLoads()
 	return info
 end
 
 
 function getStatusMeshRF()
 	local info={}
-	info['ssid']=ArednInfo.getSSID()
-	info['device']=ArednInfo.getMeshRadioDevice()
-	info['channel']=ArednInfo.getChannel(info['device'])
-	info['chanbw']=ArednInfo.getChannelBW(info['device'])
-	info['band']=ArednInfo.getBand(info['device'])
-	info['frequency']=ArednInfo.getFrequency(info['device'])
+	info['ssid']=aredn_info.getSSID()
+	info['device']=aredn_info.getMeshRadioDevice()
+	info['channel']=aredn_info.getChannel(info['device'])
+	info['chanbw']=aredn_info.getChannelBW(info['device'])
+	info['band']=aredn_info.getBand(info['device'])
+	info['frequency']=aredn_info.getFrequency(info['device'])
 	return info
 end
 
 function getStatusIp()
 	local info={}
-	info['gateway']=ArednInfo.getDefaultGW()
-	info['wifi']=ArednInfo.getInterfaceIPAddress('wifi')
-	info['lan']=ArednInfo.getInterfaceIPAddress('lan')
-	info['wan']=ArednInfo.getInterfaceIPAddress('wan')
+	info['gateway']=aredn_info.getDefaultGW()
+	info['wifi']=aredn_info.getInterfaceIPAddress('wifi')
+	info['lan']=aredn_info.getInterfaceIPAddress('lan')
+	info['wan']=aredn_info.getInterfaceIPAddress('wan')
 	return info
 end
 
 function getLocationInfo()
 	local info={}
-	local lat, lon= ArednInfo.getLatLon()
-	local gs= ArednInfo.getGridSquare()
+	local lat, lon= aredn_info.getLatLon()
+	local gs= aredn_info.getGridSquare()
 	info['lat']=lat
 	info['lon']=lon
 	info['gridsquare']=gs
@@ -118,6 +118,11 @@ end
 function getServicesByNode()
 	local nodes=getAllHosts()
    	return nodes
+end
+
+function getFreeMemory()
+	local info = aredn_info.getFreeMemory()
+	return info
 end
 
 
@@ -165,9 +170,9 @@ for page, comps in pairs(qsset) do
 			elseif comp=="memory" then
 				info['pages'][page][comp]=getFreeMemory()
 			elseif comp=="storage" then
-				info['pages'][page][comp]=getFSFree()
+				info['pages'][page][comp]=aredn_info.getFSFree()
 			elseif comp=="olsr" then
-				info['pages'][page][comp]=getOLSRInfo()
+				info['pages'][page][comp]=aredn_info.getOLSRInfo()
 			elseif comp=="location" then
 				info['pages'][page][comp]=getLocationInfo()
 			end

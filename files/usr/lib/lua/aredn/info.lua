@@ -218,7 +218,7 @@ end
 function model.getUptime()
 	local mynix=nixio.sysinfo()
 	local upsecs=mynix['uptime']
-	return secondsToClock(upsecs)
+	return upsecs
 end
 
 
@@ -234,6 +234,14 @@ end
 -------------------------------------
 function model.getTime()
 	return os.date("%H:%M:%S %Z")
+end
+
+
+-------------------------------------
+-- Returns current epoch time
+-------------------------------------
+function getEpoch()
+	return os.time()
 end
 
 -------------------------------------
