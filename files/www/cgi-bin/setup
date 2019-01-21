@@ -111,6 +111,8 @@ else
 	{
 	    eval (sprintf "\$$_ = \"%s\"", quotemeta $cfg{$_});
 	}
+	$wifi2_key =~ s/([a-f0-9][a-f0-9])/chr(hex($1))/eg;
+	$wifi2_ssid =~ s/([a-f0-9][a-f0-9])/chr(hex($1))/eg;
     }
 }
 
@@ -126,7 +128,7 @@ else
 }
 
 # make sure unchecked checkboxes are accounted for
-foreach(qw(lan_dhcp olsrd_bridge olsrd_gw wifi2_enable lan_dhcp_noroute))
+foreach(qw(lan_dhcp olsrd_bridge olsrd_gw wifi2_enable lan_dhcp_noroute wifi_enable))
 {
     $parms{$_} = 0 unless $parms{$_};
 }
@@ -185,7 +187,7 @@ $parms{wifi_txpower} = $wifi_txpower;
 # apply the wifi settings
 #
 
-if($parms{button_apply} or $parms{button_save})
+if(($parms{button_apply} or $parms{button_save}) and $wifi_enable )
 {
     if($wifi_distance < 1 or $wifi_distance =~ /\D/)
     {
@@ -437,10 +439,28 @@ if($parms{button_save})
 	push (@errors, "LAN Access Point SSID must be 32 or less characters ");
     }
 
-    if( "$wifi2_encryption" != "none" and (length( $wifi2_key ) < 8 or length($wifi2_key) > 64) )
+    if( "$wifi2_enable" eq "1" and (length( $wifi2_key ) < 8 or length($wifi2_key) > 64) )
     {
 	push (@errors, "LAN Access Point Password must be at least 8 charaters, up to 64");
     }
+    if( "$wifi2_enable" eq "1" and ( $wifi2_key =~ /\'/ or $wifi2_ssid =~ /\'/ ))
+    {
+	push (@errors, "The password and ssid may not contain a single quote character.");
+    }
+
+    if ( $wifi2_channel < 30 and "$wifi2_hwmode" eq "11a" )
+    {
+        push (@errors, "Changed to 5GHz Mesh LAN AP, please review channel selection");
+    }
+    if ( $wifi2_channel > 30 and "$wifi2_hwmode" eq "11g" )
+    {
+        push (@errors, "Changed to 2GHz Mesh LAN AP, please review channel slection");
+    }
+    if ( $phycount > 1 and $wifi_enable and $wifi2_channel < 36 and $wifi2_enable )
+    {
+	push (@errors, "Mesh RF and LAN Access Point can not both use the same wireless card, review LAN AP settings");
+    }
+	
 
     if($debug == 3) # don't save the config, just validate it
     {
@@ -452,6 +472,8 @@ if($parms{button_save})
 	$parms{node} = $node;
 	$parms{tactical} = $tactical;
 	system "touch /tmp/unconfigured" if -f "/etc/config/unconfigured";
+	$parms{wifi2_key} =~ s/(.)/sprintf("%x",ord($1))/eg;
+	$parms{wifi2_ssid} =~ s/(.)/sprintf("%x",ord($1))/eg;
 	$rc = save_setup("/etc/config.mesh/_setup");
 	$rc2 = &uci_commit("system");
 	if(-s "/tmp/web/save/node-setup.out")
@@ -669,10 +691,25 @@ print "<table cellpadding=5 border=1 width=100%><tr><td valign=top width=33%>\n"
 # MESH RF settings
 #
 
-print "<table width=100% style='border-collapse: collapse;'>
-<tr><th colspan=2>Mesh RF</th></tr>";
+print "<table width=100% style='border-collapse: collapse;'>";
+if ( $phycount > 1 )
+    {
+	print " <tr><th colspan=2>Mesh RF (2GHz)</th></tr>";
+    }
+    else
+    {
+        print " <tr><th colspan=2>Mesh RF</th></tr>";
+    }
 
 push @hidden, "<input type=hidden name=wifi_proto value='static'>";
+
+# add enable/disable
+#
+
+print "\n<tr><td>Enable</td>";
+print "<td><input type=checkbox name=wifi_enable value=1";
+print " checked" if $wifi_enable;
+print "></td></tr>\n";
 
 print "<tr><td><nobr>IP Address</nobr></td>\n";
 print "<td><input type=text size=15 name=wifi_ip value='$wifi_ip'></td></tr>\n";
@@ -686,53 +723,67 @@ if ( -f "/etc/config/unconfigured" || $parms{button_reset} ) {
     $wifi_chanbw = $defaultwifi->{'chanbw'};
 }
 
-print "<tr><td>SSID</td>\n";
-print "<td><input type=text size=15 name=wifi_ssid value='$wifi_ssid'>";
-print "-$wifi_chanbw-v3</td></tr>\n";
-
-push @hidden, "<input type=hidden name=wifi_mode value='$wifi_mode'>";
-
-print "<tr><td>Channel</td>\n";
-print "<td><select name=wifi_channel>\n";
-my $rfchannels=rf_channels_list();
-foreach  $channelnumber (sort {$a <=> $b} keys %{$rfchannels} )
+if ( ${wifi_enable} )
 {
-    selopt($rfchannels->{$channelnumber}, $channelnumber, $wifi_channel);
+    print "<tr><td>SSID</td>\n";
+    print "<td><input type=text size=15 name=wifi_ssid value='$wifi_ssid'>";
+    print "-$wifi_chanbw-v3</td></tr>\n";
+
+    push @hidden, "<input type=hidden name=wifi_mode value='$wifi_mode'>";
+
+    print "<tr><td>Channel</td>\n";
+    print "<td><select name=wifi_channel>\n";
+    my $rfchannels=rf_channels_list();
+    foreach  $channelnumber (sort {$a <=> $b} keys %{$rfchannels} )
+    {
+        selopt($rfchannels->{$channelnumber}, $channelnumber, $wifi_channel);
+    }
+    print "</select></td></tr>\n";
+
+    print "<tr><td>Channel Width</td>\n";
+    print "<td><select name=wifi_chanbw>\n";
+    selopt("20 MHz","20",$wifi_chanbw);
+    selopt("10 MHz","10",$wifi_chanbw);
+    selopt("5 MHz","5",$wifi_chanbw);
+    print "</select></td></tr>\n";
+
+    push (@hidden, "<input type=hidden name=wifi_country value='HX'>");
+
+    print "<tr><td colspan=2 align=center><hr><small>Active Settings</small></td></tr>\n";
+
+    print "<tr><td><nobr>Tx Power</nobr></td>\n";
+    print "<td><select name=wifi_txpower>\n";
+    my $txpoweroffset = wifi_txpoweroffset();
+    for($i = wifi_maxpower($wifi_channel); $i >= 1; --$i) { selopt($i+$txpoweroffset ." dBm", $i, $wifi_txpower) }
+    print "</select>&nbsp;&nbsp;<a href=\"/help.html\#power\" target=\"_blank\"><img src=\"/qmark.png\"></a></td></tr>\n";
+
+    print "<tr id='dist' class='dist-norm'><td>Distance to<br />FARTHEST Neighbor</td>\n";
+
+    $wifi_distance=int($wifi_distance);  # in meters
+    $wifi_distance_disp_km=int($wifi_distance/1000);
+    $wifi_distance_disp_miles=sprintf("%.2f",$wifi_distance_disp_km*.621371192);
+
+    print "<td><input disabled size=6 type=text name='wifi_distance_disp_miles' value='$wifi_distance_disp_miles' title='Distance to the farthest neighbor'>&nbsp;miles<br />";
+    print "<input disabled size=6 type=text size=4 name='wifi_distance_disp_km' value='$wifi_distance_disp_km' title='Distance to the farthest neighbor'>&nbsp;kilometers<br />";
+    print "<input disabled size=6 type=text size=4 name='wifi_distance_disp_meters' value='$wifi_distance' title='Distance to the farthest neighbor'>&nbsp;meters<br />";
+
+    print "<input id='distance_slider' type='range' min='0' max='150' step='1' value='$wifi_distance_disp_km' oninput='updDist(this.value)' onchange='updDist(this.value)' /><br />";
+    print "<input type='hidden' size='6' name='wifi_distance' value='$wifi_distance' />";
+    print "</td></tr>\n";
+
+    print "<tr><td></td><td><input type=submit name=button_apply value=Apply title='Immediately use these active settings'></td></tr>\n";
+
 }
-print "</select></td></tr>\n";
-
-print "<tr><td>Channel Width</td>\n";
-print "<td><select name=wifi_chanbw>\n";
-selopt("20 MHz","20",$wifi_chanbw);
-selopt("10 MHz","10",$wifi_chanbw);
-selopt("5 MHz","5",$wifi_chanbw);
-print "</select></td></tr>\n";
-
-push (@hidden, "<input type=hidden name=wifi_country value='HX'>");
-
-print "<tr><td colspan=2 align=center><hr><small>Active Settings</small></td></tr>\n";
-
-print "<tr><td><nobr>Tx Power</nobr></td>\n";
-print "<td><select name=wifi_txpower>\n";
-my $txpoweroffset = wifi_txpoweroffset();
-for($i = wifi_maxpower($wifi_channel); $i >= 1; --$i) { selopt($i+$txpoweroffset ." dBm", $i, $wifi_txpower) }
-print "</select>&nbsp;&nbsp;<a href=\"/help.html\#power\" target=\"_blank\"><img src=\"/qmark.png\"></a></td></tr>\n";
-
-print "<tr id='dist' class='dist-norm'><td>Distance to<br />FARTHEST Neighbor</td>\n";
-
-$wifi_distance=int($wifi_distance);  # in meters
-$wifi_distance_disp_km=int($wifi_distance/1000);
-$wifi_distance_disp_miles=sprintf("%.2f",$wifi_distance_disp_km*.621371192);
-
-print "<td><input disabled size=6 type=text name='wifi_distance_disp_miles' value='$wifi_distance_disp_miles' title='Distance to the farthest neighbor'>&nbsp;miles<br />";
-print "<input disabled size=6 type=text size=4 name='wifi_distance_disp_km' value='$wifi_distance_disp_km' title='Distance to the farthest neighbor'>&nbsp;kilometers<br />";
-print "<input disabled size=6 type=text size=4 name='wifi_distance_disp_meters' value='$wifi_distance' title='Distance to the farthest neighbor'>&nbsp;meters<br />";
-
-print "<input id='distance_slider' type='range' min='0' max='150' step='1' value='$wifi_distance_disp_km' oninput='updDist(this.value)' onchange='updDist(this.value)' /><br />";
-print "<input type='hidden' size='6' name='wifi_distance' value='$wifi_distance' />";
-print "</td></tr>\n";
-
-print "<tr><td></td><td><input type=submit name=button_apply value=Apply title='Immediately use these active settings'></td></tr>\n";
+else
+{
+    push @hidden, "<input type=hidden name=wifi_ssid value='$wifi_ssid'>";
+    push @hidden, "<input type=hidden name=wifi_mode value='$wifi_mode'>";
+    push @hidden, "<input type=hidden name=wifi_txpower value='$wifi_txpower'>";
+    push @hidden, "<input type=hidden name=wifi_channel value='$wifi_channel'>";
+    push @hidden, "<input type=hidden name=wifi_chanbw value='$wifi_chanbw'>";
+    push @hidden, "<input type=hidden name=wifi_distance value='$wifi_distance'>";
+    push (@hidden, "<input type=hidden name=wifi_country value='HX'>");
+} 
 
 print "</table></td>\n";
 
@@ -825,25 +876,43 @@ else
 
 print "<tr><td colspan=2><hr></hr></td></tr>";
 
-if ( $phycount > 1 ) {
+$M39model = `/usr/local/bin/get_model | grep -e "M[39]"`;
+if ( $phycount > 1 or ! $wifi_enable and ! $M39model )
+{
 
-    # determine AP's band
-    if ( "$phy" eq "phy0" ) { $APphy="phy1"; }
+    if ( $wifi_enable and "$wifi2_hwmode" eq "11g" )
+    {
+	$wifi2_hwmode = "11a";
+	if ( $wifi2_channel < 36 )
+	{
+	    $wifi2_channel = 36;
+	}
+    }
+
+    # determine AP's wireless phy
+    if ( "$wifi2_hwmode" eq "11g"  and ! $wifi_enable )
+    { $APphy="phy1"; }
     else { $APphy="phy0"; }
-    $rc3 = system("iw phy ${APphy} info | grep -q '5180 MHz > /dev/null");
+
+    $rc3 = system("iw phy ${APphy} info | grep -q '5180 MHz' > /dev/null");
     undef @chan;
-    if ( $rc3 ) {
-	@chan=@cfive;
-    }
-    else {
-	@chan=@ctwo;
-    }
+    if ( $rc3 ) { @chan=@ctwo; } else { @chan=@cfive; }
 
     print "<tr><th colspan=2>LAN Access Point</th></tr>";
     print "<tr><td>Enable</td>";
     print "<td><input type=checkbox name=wifi2_enable value=1";
     print " checked" if $wifi2_enable;
     print "></td></tr>\n";
+
+    if ( $phycount > 1 ) {
+	print "<tr><td>AP band</td>\n";
+	print "<td><select name=wifi2_hwmode>\n";
+	if ( ! $wifi_enable ) {
+	    selopt("2GHz", "11g", $wifi2_hwmode);
+	}
+	selopt("5GHz", "11a", $wifi2_hwmode);
+	print "</select></td></tr>\n";
+    }
 
     print "<tr><td>SSID</td>\n";
     print "<td><input type=text size=15 name=wifi2_ssid value='$wifi2_ssid'></td></tr>\n";
@@ -859,14 +928,21 @@ if ( $phycount > 1 ) {
 
     print "<tr><td>Encryption</td>\n";
     print "<td><select name=wifi2_encryption>\n";
-    selopt("none", "none", $wifi2_encryption);
-    selopt("WPA2 PSK", "psk2", $wifi2_encryption);
-    selopt("WPA PSK", "psk", $wifi2_encryption);
-    selopt("WEP" , "wep", $wifi2_encryption);
+	selopt("WPA2 PSK", "psk2", $wifi2_encryption);
+	selopt("WPA PSK", "psk", $wifi2_encryption);
     print "</select></td></tr>\n";
     print "<tr><td>Password</td>\n";
-    print "<td><input type=text size=15 name=wifi2_key value='$wifi2_key'>";
+    print "<td><input type=password size=15 name=wifi2_key value='$wifi2_key'>";
     print "</td></tr>\n";
+}
+else
+{
+    push @hidden, "<input type=hidden name=wifi2_enable     value='$wifi2_enable'>";
+    push @hidden, "<input type=hidden name=wifi2_ssid       value='$wifi2_ssid'>";
+    push @hidden, "<input type=hidden name=wifi2_key        value='$wifi2_key'>";
+    push @hidden, "<input type=hidden name=wifi2_channel    value='$wifi2_channel'>";
+    push @hidden, "<input type=hidden name=wifi2_encryption value='$wifi2_encryption'>"; 
+    push @hidden, "<input type=hidden name=wifi2_hwmode     value='$wifi2_hwmode'>"; 
 }
 
 if(0) # disable for now
