@@ -35,7 +35,6 @@
 --]]
 
 require("uci")
-require("aredn.uci")
 require("aredn.utils")
 local aredn_info = require("aredn.info")
 require("aredn.http")
@@ -60,8 +59,7 @@ info['api_version']="1.6"
 
 
 -- NODE name
-css=getUciConfType("system", "system")
-info['node']=css[0]['hostname']
+info['node']=aredn_info.getNodeName()
 
 info['node_details']={}
 -- MODEL

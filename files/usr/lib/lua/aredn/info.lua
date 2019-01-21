@@ -35,7 +35,7 @@
 --]]
 
 require("uci")
-require("aredn.uci")
+local aredn_uci = require("aredn.uci")
 require("aredn.utils")
 -- require("aredn.http")
 local lip=require("luci.ip")
@@ -64,7 +64,7 @@ end
 -- Returns name of the node
 -------------------------------------
 function model.getNodeName()
-	css=getUciConfType("system", "system")
+	css=aredn_uci.getUciConfType("system", "system")
 	return css[0]['hostname']
 end
 
@@ -72,7 +72,7 @@ end
 -- Returns description of the node
 -------------------------------------
 function model.getNodeDescription()
-	css=getUciConfType("system", "system")
+	css=aredn_uci.getUciConfType("system", "system")
 	return css[0]['description']
 end
 
@@ -138,7 +138,7 @@ end
 function model.getSSID()
 	-- SSID
 	local myssid=""
-	local wif=getUciConfType("wireless", "wifi-iface")
+	local wif=aredn_uci.getUciConfType("wireless", "wifi-iface")
 	for pos, t in pairs(wif) do
 		if wif[pos]['network']=="wifi" then
 			myssid=wif[pos]['ssid']
@@ -154,7 +154,7 @@ end
 function model.getMeshRadioDevice()
 	--Determine radio device for mesh
 	local radio=""
-	local wifiinterfaces=getUciConfType("wireless","wifi-iface")
+	local wifiinterfaces=aredn_uci.getUciConfType("wireless","wifi-iface")
 	for pos,i in pairs(wifiinterfaces) do
 		if wifiinterfaces[pos]['mode']=="adhoc" then
 			radio=wifiinterfaces[pos]['device']
@@ -304,7 +304,7 @@ function model.getInterfaceIPAddress(interface)
 		return getWAN()
 	end
 
-	return getUciConfSectionOption("network",interface,"ipaddr")
+	return aredn_uci.getUciConfSectionOption("network",interface,"ipaddr")
 end
 
 -------------------------------------
