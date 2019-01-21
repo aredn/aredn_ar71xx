@@ -56,6 +56,7 @@ meshphy="phy${meshif#wlan}"
 rm -f "${dropdir}/wireless" 
 touch "${dropdir}/wireless"
 
+ifacecount=$(ls -d /sys/class/ieee80211/* | wc -l)
 ifacenum=0
 
 # find each phy and configure in wirelss config 
@@ -81,12 +82,6 @@ for _dev in /sys/class/ieee80211/*; do
     dev_id="set wireless.${radio}.macaddr=$(cat /sys/class/ieee80211/${dev}/macaddress)"
   fi
 
-  if [ $wifi2_enable -eq 1 ]; then
-    wifi2_disabled="0"
-  else
-    wifi2_disabled="1"
-  fi
-
   is_mesh_rf=0
   hwmode="11g"
   htmode="HT20"
@@ -94,6 +89,12 @@ for _dev in /sys/class/ieee80211/*; do
   iw phy "${dev}" info | grep -q '5180 MHz' && {
     hwmode="11a"
   }
+
+  if [[  $wifi2_enable -eq 1 -a \( $ifacecount -eq 1 -o \( \( $ifacecount -gt 1 \) -a \( "$hwmode" = "$wifi2_hwmode" \) \) \) ]] ; then
+    wifi2_disabled="0"
+  else
+    wifi2_disabled="1"
+  fi
 
   if [ "${dev}" = "${meshphy}" ]; then
     # mesh RF adhoc configuration
@@ -109,16 +110,19 @@ for _dev in /sys/class/ieee80211/*; do
     key=""
     network="wifi"
   else
-    # mesh AP bridged with lan
     disabled="${wifi2_disabled}"
     channel="${wifi2_channel}"
     chanbw=""
     country=""
     distance=""
-    ssid="${wifi2_ssid}"
+    ssid=$(echo "${wifi2_ssid}" | sed -e 's/\(..\)/\\x\1/g')
+    ssid=$(echo -e "${ssid}")
+    ssid=${ssid//\"/\\\"}
     mode="ap"
     encryption="${wifi2_encryption}"
-    key="${wifi2_key}"
+    key=$(echo "${wifi2_key}" | sed -e 's/\(..\)/\\x\1/g')
+    key=$(echo -e "${key}")
+    key=${key//\"/\\\"}
     network="lan"
   fi
 
@@ -137,9 +141,9 @@ for _dev in /sys/class/ieee80211/*; do
     set wireless.@wifi-iface[${ifacenum}].device=${radio}         
     set wireless.@wifi-iface[${ifacenum}].network=${network}      
     set wireless.@wifi-iface[${ifacenum}].mode=${mode}            
-    set wireless.@wifi-iface[${ifacenum}].ssid=${ssid}               
+    set wireless.@wifi-iface[${ifacenum}].ssid="${ssid}"               
     set wireless.@wifi-iface[${ifacenum}].encryption=${encryption}       
-    set wireless.@wifi-iface[${ifacenum}].key=${key}
+    set wireless.@wifi-iface[${ifacenum}].key="${key}"
 EOF
   uci -c ${dropdir} -q commit wireless
 
@@ -154,7 +158,7 @@ EOF
 EOF
     uci -q -c ${dropdir} commit wireless
   fi
-
+ 
   ifacenum=$((ifacenum + 1))
 
 done

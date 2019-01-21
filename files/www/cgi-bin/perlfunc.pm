@@ -1022,6 +1022,26 @@ sub hardware_info
       'rfband'          => '2400',
       'chanpower'       => { 1 => '21', 2 => '25', 11 => '18' },
     },
+    'TP-Link CPE220 v2.0' => {
+      'name'            => 'TP-Link CPE220 v2.0',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '30',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '2400',
+      'chanpower'       => { 1 => '25', 2 => '28', 11 => '27'  },
+    },
+    'TP-Link CPE220 v3.0' => {
+      'name'            => 'TP-Link CPE220 v3.0',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '30',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '2400',
+      'chanpower'       => { 1 => '25', 2 => '28', 11 => '27'  },
+    },
     'TP-Link CPE510 v1.0' => {
       'name'            => 'TP-Link CPE510 v1.0',
       'comment'         => '',
@@ -1052,6 +1072,35 @@ sub hardware_info
       'rfband'          => '5800ubntus',
       'chanpower'       => { 140 => '17', 184 => '26' },
     },
+    'TP-Link CPE510 v3.0' => {
+      'name'            => 'TP-Link CPE510 v3.0',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '26',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '5800ubntus',
+      'chanpower'       => { 140 => '17', 184 => '26' },
+    },
+    'TP-Link CPE610 v1.0' => {
+      'name'            => 'TP-Link CPE610 v1.0',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '30',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '5800ubntus',
+      'chanpower'       => { 133 => '15', 141 => '26', 143 => '25' , 149 => '15' , 165 => '14', 166 => '25' },
+    },
+    'Mikrotik RouterBOARD 911G-5HPnD' => {
+      'name'            => 'Mikrotik RouterBOARD 911G-5HPnD',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '30',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '5800ubntus',
+    },
     'MikroTik RouterBOARD 952Ui-5ac2nD' => {
       'name'            => 'MikroTik RouterBOARD 952Ui-5ac2nD',
       'comment'         => '',
@@ -1075,6 +1124,15 @@ sub hardware_info
       'comment'         => '',
       'supported'       => '1',
       'maxpower'        => '30',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '5800ubntus',
+    },
+    'MikroTik RouterBOARD LDF-5nD' => {
+      'name'            => 'MikroTik RouterBOARD LDF-5nD',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '25',
       'pwroffset'       => '0',
       'usechains'       => 1,
       'rfband'          => '5800ubntus',
@@ -1525,6 +1583,15 @@ sub hardware_info
       'usechains'       => 1,
       'rfband'          => '2400',
     },
+    '0xe868' => {
+      'name'            => 'Rocket M2 XW',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '21',
+      'pwroffset'       => '7',
+      'usechains'       => 1,
+      'rfband'          => '2400',
+    },
     '0xe885' => {
       'name'            => 'PowerBeam M5 620 XW',
       'comment'         => '',
@@ -1686,6 +1753,33 @@ sub get_interface
   } else {
       $intfname = `uci -q get network.$intf.ifname | cut -f1`;
   }
+  chomp $intfname;
+
+  if ($intfname) {
+    return $intfname;
+  } else {
+    # guess at most common interface options
+    if ( $intf eq "lan" )
+    {
+      return "eth0";
+    } elsif ( $intf eq "wan" ){
+      return "eth0.1";
+    } elsif ( $intf eq "wifi" ){
+      return "wlan0";
+    } elsif ( $intf eq "dtdlink" ){
+      return "eth0.2";
+    } else {
+      # we have a problem
+      die("Unknown interface in call to get_interface");
+    }
+  }
+}
+
+sub get_bridge_interfaces
+{
+  my ($intf) = @_;
+  my $bridge = `uci -q get network.$intf.type`;
+  my $intfname = `uci -q get network.$intf.ifname`;
   chomp $intfname;
 
   if ($intfname) {
