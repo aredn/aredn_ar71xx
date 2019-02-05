@@ -1,4 +1,4 @@
-=for comment
+==for comment
 
   Part of AREDN -- Used for creating Amateur Radio Emergency Data Networks
   Copyright (C) 2015 Conrad Lara
@@ -1120,6 +1120,15 @@ sub hardware_info
       'usechains'       => 1,
       'rfband'          => '2400',
     },
+    'MikroTik RouterBOARD RB952Ui-5ac2nD' => {
+      'name'            => 'MikroTik RouterBOARD RB952Ui-5ac2nD',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '22',
+      'pwroffset'       => '0',
+      'usechains'       => 1,
+      'rfband'          => '2400',
+    },
     'Mikrotik RouterBOARD 912UAG-2HPnD' => {
       'name'            => 'Mikrotik RouterBOARD 912UAG-2HPnD',
       'comment'         => '',
@@ -1590,6 +1599,15 @@ sub hardware_info
       'supported'       => '1',
       'maxpower'        => '21',
       'pwroffset'       => '2',
+      'usechains'       => 1,
+      'rfband'          => '2400',
+    },
+    '0xe868' => {
+      'name'            => 'Rocket M2 XW',
+      'comment'         => '',
+      'supported'       => '1',
+      'maxpower'        => '21',
+      'pwroffset'       => '7',
       'usechains'       => 1,
       'rfband'          => '2400',
     },
