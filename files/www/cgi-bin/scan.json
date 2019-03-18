@@ -1,0 +1,29 @@
+#!/usr/bin/lua
+
+require("uci")
+require("aredn.http")
+local json = require ("luci.jsonc")
+require("luci.util")
+
+-- ==== MAIN =====
+ctx = uci.cursor()
+if not ctx then
+                error("Failed to get uci cursor")
+end
+
+info={}
+
+-- API version
+info['api_version']="1.6"
+
+-- Scan Results
+info['results']={}
+
+local scan=luci.util.exec("perl /usr/local/bin/wscan -j")
+info['results']=luci.jsonc.parse(scan)
+
+-- Output the HTTP header for JSON
+json_header()
+
+-- Output the scan results as json
+print(json.stringify(info,true))
