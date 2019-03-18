@@ -37,9 +37,25 @@
 
 =cut
 
+sub to_json {
+    my $val = shift;
+    if (not defined $val) {
+        return "null";
+    } elsif (not ref $val) {
+        $val =~ s/([\0-\x1f\"\\])/sprintf "\\u%04x", ord $1/eg;
+        return '"' . $val . '"';
+    } elsif (ref $val eq 'ARRAY') {
+        return '[' . join(',', map to_json($_), @$val) . ']';
+    } elsif (ref $val eq 'HASH') {
+        return '{' . join(',', map to_json($_) . ":" . to_json($val->{$_}), sort keys %$val) . '}';
+    } else {
+        die "Cannot encode $val as JSON!\n";
+    }
+}
+
 sub usage
 {
-  print "usage: wscan [-1abnor] [-i iface]\n";
+  print "usage: wscan [-1abnorwj] [-i iface]\n";
   print "       -1   run once and quit\n";
   print "       -a   average mode\n";
   print "       -b   batch mode\n";
@@ -47,6 +63,7 @@ sub usage
   print "       -o   show only open access points\n";
   print "       -r   raw mode\n";
   print "       -w   produce html output\n";
+  print "       -j   produce json\n";
   exit;
 }
 
@@ -119,6 +136,10 @@ sub pushAP
     push @list, sprintf "% 3d|%d|%s|%s|%s|%s|%s",
     $signal, $chan, $key, sprintf("&#x%*vX", '&#x',$ssid), $host, $mac, $mode;
   }
+  elsif($json)
+  {
+    push @list, { signal => $signal, chan => $chan, key => $key, ssid => $ssid, host => $host, mac => $mac, mode => $mode };
+  }
   else
   {
     push @list, sprintf "% 3d %2d %s %-32s\t%s\t%s\t%s\n",
@@ -161,6 +182,7 @@ while(defined ($arg = shift))
   elsif($arg eq "-i") { $iface = shift }
   elsif($arg eq "-n") { $loops = shift }
   elsif($arg eq "-w") { $web = 1 }
+  elsif($arg eq "-j") { $json = 1 }
   else { die "bad arg $arg\n" }
 }
 
@@ -280,6 +302,10 @@ while(1)
       print "<table class=sortable border=1 cellpadding=5>\n";
       print "<tr><th>Sig</th><th>Chan</th><th>Enc</th><th>SSID</th><th>Hostname</th><th>MAC/BSSID</th><th>802.11 Mode</th></tr>\n";
     }
+    elsif($json)
+    {
+      
+    }
     else
     {
       #system "clear";
@@ -321,6 +347,12 @@ while(1)
       print "</tr>\n";
     }
     print "</table>\n";
+    exit;
+  }
+  elsif($json)
+  {
+    print to_json(\@list);
+    print "\n";
     exit;
   }
   else
