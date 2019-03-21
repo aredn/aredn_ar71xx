@@ -133,6 +133,12 @@ other mesh nodes.
 * NanoStation M3 XM
 * NanoStation M5 XM
 
+The Mikrotik hAP ac lite is pre-configured with the following VLANs:
+
+* Port 1: VLAN 1 (untagged) WAN connection between AREDN network and an external network such as the Internet.
+* Port 5: VLAN 2 for DtD linking of another node with the _Mikrotik hAP ac lite_.
+* Ports 2-4: no VLAN tagging, for devices connecting to the _Mikrotik hAP ac lite_ local LAN address space.
+
 ## Submitting Bug Reports
 
 Please submit all issues to http://github.com/aredn/aredn_ar71xx/issues
