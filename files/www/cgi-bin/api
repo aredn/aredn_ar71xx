@@ -126,6 +126,17 @@ function getFreeMemory()
 	return info
 end
 
+function getScanList()
+	local device = aredn_info.getMeshRadioDevice()
+	local scanlist = iwinfo["nl80211"].scanlist(device)
+	return scanlist
+end
+
+function getFreqList()
+	local device = aredn_info.getMeshRadioDevice()
+	local freqlist = iwinfo["nl80211"].freqlist(device)
+	return freqlist
+end
 
 -- ==== MAIN =====
 ctx = uci.cursor()
@@ -176,6 +187,8 @@ for page, comps in pairs(qsset) do
 				info['pages'][page][comp]=aredn_info.getOLSRInfo()
 			elseif comp=="location" then
 				info['pages'][page][comp]=getLocationInfo()
+			elseif comp=="freqlist" then
+				info['pages'][page][comp]=getFreqList()
 			end
 		end
 	elseif page=="mesh" then
@@ -204,13 +217,12 @@ for page, comps in pairs(qsset) do
 		end
 	elseif page=="scan" then
 		for i,comp in pairs(comps:split(',')) do
-			if comp=="scanlist" then
-				local device = aredn_info.getMeshRadioDevice()
-				local scanlist = iwinfo["nl80211"].scanlist(device)
-				info['pages'][page][comp]=scanlist
-			end
+				if comp=="scanlist" then
+					info['pages'][page][comp]=getScanList()
+				end
 		end
-	end
+end
+
 end
 
 -- Output the HTTP header for JSON
