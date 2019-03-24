@@ -171,10 +171,47 @@ function model.getBand(radio)
 end
 
 -------------------------------------
--- TODO: Return Frequency
+-- Return Frequency
 -------------------------------------
-function model.getFrequency(radio)
-	return ""
+function model.getFreq(wlanInf)
+	local freq=""
+	freq=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Mode:'")
+	freq=freq:gsub("^%s*(.-)%s*$", "%1")
+	freq=string.match(freq, "%((.-)%)")
+	return freq
+end
+
+-------------------------------------
+-- Return TxMbps (Bit Rate)
+-------------------------------------
+function model.getBitRate(wlanInf)
+	local br=""
+	br=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Bit Rate:'")
+	br=br:gsub("^%s*(.-)%s*$", "%1")
+	br=string.match(br, "Bit Rate: (.+)")
+	return br
+end
+
+-------------------------------------
+-- Return Signal
+-------------------------------------
+function model.getSig(wlanInf)
+	local sig=""
+	siginfo=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Signal:'")
+	siginfo=siginfo:gsub("^%s*(.-)%s*$", "%1")
+	sig=string.match(siginfo, "Signal: (.-) %u-")
+	return sig
+end
+
+-------------------------------------
+-- Return Noise
+-------------------------------------
+function model.getNoise(wlanInf)
+	local nse=""
+	siginfo=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Signal:'")
+	siginfo=siginfo:gsub("^%s*(.-)%s*$", "%1")
+	nse=string.match(siginfo, "Noise: (.-) %u-")
+	return nse
 end
 
 -------------------------------------

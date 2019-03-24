@@ -84,11 +84,18 @@ info['node_details']['firmware_version']=aredn_info.getFirmwareVersion()
 -- Mesh RF info
 info['meshrf']={}
 local radio=aredn_info.getMeshRadioDevice()
-if ( radio ~= nill and radio ~= "" ) then
+local wlanInf=""
+wlanInf=os.capture("uci -q get network.wifi.ifname")
+wlanInf=wlanInf:gsub("^%s*(.-)%s*$", "%1")
+if ( radio ~= nill and radio ~= "" and wlanInf ~= nill and wlanInf ~= "" ) then
 	info['meshrf']['status']="on"
 	info['meshrf']['ssid']=aredn_info.getSSID()
 	info['meshrf']['channel']=aredn_info.getChannel(radio)
 	info['meshrf']['chanbw']=aredn_info.getChannelBW(radio)
+	info['meshrf']['txmbps']=aredn_info.getBitRate(wlanInf)
+	info['meshrf']['freq']=aredn_info.getFreq(wlanInf)
+	info['meshrf']['signal']=aredn_info.getSig(wlanInf)
+	info['meshrf']['noise']=aredn_info.getNoise(wlanInf)
 else
 	info['meshrf']['status']="off"
 end
