@@ -141,19 +141,19 @@ $header = <<EOF;
       }); // --- chart
 
       var updateArchiveChart = function () {
-        \$.getJSON("/cgi-bin/api?chart=signal&device=$parms{device}", function (result) {
-          chart.options.data[0].dataPoints = result.pages.chart.signal[0];
-          if(result.pages.chart.signal.constructor === Array) {
+        \$.getJSON("/cgi-bin/api?chart=archive&device=$parms{device}", function (result) {
+          chart.options.data[0].dataPoints = result.pages.chart.archive[0];
+          if(result.pages.chart.archive.constructor === Array) {
             chart.render();
           };
         });
       };
 
       var updateRealtimeChart = function () {
-        \$.getJSON("/cgi-bin/api?chart=signal&realtime=1&device=$parms{device}", function (result) {
-          dps[0].push(result.pages.chart.signal[0][0]);
+        \$.getJSON("/cgi-bin/api?chart=realtime&realtime=1&device=$parms{device}", function (result) {
+          dps[0].push(result.pages.chart.realtime[0][0]);
           chart.render();
-          var snr = (result.pages.chart.signal[0][0].y[1] * -1) - (result.pages.chart.signal[0][0].y[0] * -1);
+          var snr = (result.pages.chart.realtime[0][0].y[1] * -1) - (result.pages.chart.realtime[0][0].y[0] * -1);
           toneFreq(snr);
           \$('#snr').html(snr);
         });
