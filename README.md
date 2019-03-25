@@ -43,14 +43,6 @@ features and the overall mesh node is stable.   The more participation,
 the earlier an issue is found, the faster an enhancement will be
 turned into a release.
 
-Here is a summary of significant features added since 3.18.9.0 
-was released:
-
-* Locked to Openwrt 18.06.2
-* Added RBLHG-5nD, RBLHG-5HPnD-XL, LBE-M5, LDF-5, and more
-* Standardized NS M2/M5 XW/XM Ethernet port functionality
-* Enabled 5GHz LAN Access Point on hAP ac lite
-
 Please refer to https://github.com/aredn/aredn_ar71xx/issues
 for a list of outstanding defects.
 
@@ -84,8 +76,10 @@ PowerBridge | nano-m  | 64Mb | stable
 Rocket M9/M2/M3/M5/M5GPS XM | rocket-m | 64Mb | stable
 Rocket M2 XW | loco-m-xw | 64Mb | stable
 Rocket M5 XW | rocket-m-xw | 64Mb | stable
-Rocket M2 TI | rocket-m-ti? | 64Mb | unknown
-Rocket M5 TI | rocket-m-ti | 64Mb | stable
+Rocket M2 Titanium TI | rocket-m-ti | 64Mb | unknown
+Rocket M2 Titanium XW | rocket-m-xw | 64Mb | unknown
+Rocket M5 Titanium TI | rocket-m-ti | 64Mb | stable
+Rocket M5 Titanium XW | rocket-m-xw | 64Mb | stable
 TPLink CPE210 v1.0/v1.1 | cpe210-220-v1 | 64Mb | stable
 TPLink CPE210 v2.0 | cpe210-v2 | 64Mb | stable
 TPLink CPE210 v3.0 | cpe210-v3 | 64Mb | stable
@@ -133,6 +127,12 @@ other mesh nodes.
 * NanoStation M3 XM
 * NanoStation M5 XM
 
+The Mikrotik hAP AC Lite, Ubiquiti AirRouter, and AirRouter HP are pre-configured with the following VLANs:
+
+* Port 1: WAN Port - Packets in/out of this port are expected to be untagged. The node is (by default) configured to receive a DHCP assigned address from a home network, internet, or other foreign network.
+* Port 5: DtDLink Port Mesh Routing -- Connect to another mesh node or 8021.q switch. Packets in/out of this port must be vlan 2 tagged, other packets are ignored.
+* Ports 2-4: LAN devices -- Packets in/out of this port are expected to be untagged. The mesh node will (default) DHCP assign an IP address to your computer, ipCam, voip phone, etc. connected to these ports.
+
 ## Submitting Bug Reports
 
 Please submit all issues to http://github.com/aredn/aredn_ar71xx/issues
@@ -176,11 +176,18 @@ zypper install git subversion ncurses-devel zlib-devel gawk unzip \
   libopenssl-devel shellcheck lua51
 ```
 
+On Arch:
+```
+pacman -S base-devel subversion zlib unzip perl-xml-libxml wget \
+  quilt openssl shellcheck lua51 git
+```
+
 ### Building firmware images
 
 To obtain the source and build the firmware locally use:
 
-```bash
+```
+bash
 git clone https://github.com/aredn/aredn_ar71xx.git
 cd aredn_ar71xx
 vi config.mk # enter your callsign, etc.
@@ -204,6 +211,12 @@ You need approximately 10GB of space for the build.
 
 Prior AREDN images can be rebuilt.  Replace one of the following after
 the "cd aredn_ar71xx" command above:
+
+AREDN release 3.19.3.0
+
+```
+git checkout 3.19.3.0
+```
 
 AREDN release 3.18.9.0
 
