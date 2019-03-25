@@ -126,7 +126,7 @@ function getFreeMemory()
 	return info
 end
 
-function getSignal() 
+function getSignal(realtime) 
 	local defnoise=-95
 	local ol={}
 	local dpa={}  -- datapoint table/array
@@ -150,7 +150,7 @@ function getSignal()
 	local radio=aredn_info.getMeshRadioDevice()
 	local bandwidth=aredn_info.getChannelBW(radio)
 
-	if parms.realtime then
+	if realtime then
 		-- REALTIME
 		local d=os.date("%H:%M:%S")
 		local n   -- noise
@@ -340,8 +340,10 @@ for page, comps in pairs(qsset) do
 		end
 	elseif page=="chart" then
 		for i,comp in pairs(comps:split(',')) do
-			if comp=="signal" then
-				info['pages'][page][comp]=getSignal()
+			if comp=="realtime" then
+				info['pages'][page][comp]=getSignal(true)
+			elseif comp=="archive" then
+				info['pages'][page][comp]=getSignal(false)
 			end
 		end
 	end
