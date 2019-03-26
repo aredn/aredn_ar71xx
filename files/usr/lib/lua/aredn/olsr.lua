@@ -52,7 +52,7 @@ function model.getOLSRInterfaceType(iface)
   elseif string.match(iface,"eth") then
     it="DTD"
   elseif string.match(iface,"tun") then
-    it=TUN
+    it="TUN"
   end
   return it
 end
