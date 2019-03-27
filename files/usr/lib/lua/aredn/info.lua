@@ -251,13 +251,6 @@ function neighborLinkInfo()
 		neighborLinkInfo[name]["lq"]=lq
 		neighborLinkInfo[name]["nlq"]=nlq
 		neighborLinkInfo[name]["link_type"]=linkType
---		print("Node: "..name)
---		print("TX br: "..tx_rate)
---		print("RX br: "..rx_rate)
---		print("Sig: "..sig)
---		print("Noise: "..nse)
---		print("LQ: "..lq.."% NLQ: "..nlq.."%")
---		print("Link Type: "..linkType)
 	end
 	return neighborLinkInfo
 end
@@ -289,7 +282,6 @@ function local_services()
 		table.insert(lclsrvs, service)
 	end
 	return lclsrvs
---	info['services_local']=lclsrvs
 end
 
 -------------------------------------
@@ -320,7 +312,6 @@ function all_services()
 		table.insert(services,service)
 	end
 	return services
---	info['services']=services
 end
 
 -------------------------------------
@@ -362,12 +353,12 @@ function all_hosts()
 	end
 	info['hosts']=hosts
 end
+
 -------------------------------------
 -- Return link_info (for sysinfo.json)
 -------------------------------------
 function link_info()
 	local linkinfo={}
---	local linkinfo['link_info']={}
 	for name, info in pairs(neighborLinkInfo()) do
 		linkinfo[name]={}
 		for key, value in pairs(info) do
@@ -375,8 +366,8 @@ function link_info()
 		end
 	end
 	return linkinfo
---	info['link_info']=linkinfo
 end
+
 -------------------------------------
 -- Return Channel for Radio
 -- @param radio Radio Device.

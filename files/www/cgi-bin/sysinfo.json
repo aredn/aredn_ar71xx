@@ -84,7 +84,7 @@ info['node_details']['firmware_version']=aredn_info.getFirmwareVersion()
 info['meshrf']={}
 local radio=aredn_info.getMeshRadioDevice()
 
-if ( radio ~= nill and radio ~= "" and wlanInf ~= nill and wlanInf ~= "" ) then
+if ( radio ~= nill and radio ~= "" ) then
 	info['meshrf']['status']="on"
 	info['meshrf']['ssid']=aredn_info.getSSID()
 	info['meshrf']['channel']=aredn_info.getChannel(radio)
