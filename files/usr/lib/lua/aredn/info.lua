@@ -37,10 +37,12 @@
 require("uci")
 local aredn_uci = require("aredn.uci")
 require("aredn.utils")
+local olsr=require("aredn.olsr")
 -- require("aredn.http")
 local lip=require("luci.ip")
 require("nixio")
 require("ubus")
+require("iwinfo")
 
 -------------------------------------
 -- Public API is attached to table
@@ -173,7 +175,8 @@ end
 -------------------------------------
 -- Return Frequency
 -------------------------------------
-function model.getFreq(wlanInf)
+function model.getFreq()
+	local wlanInf=get_ifname(wifi)
 	local freq=""
 	freq=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Mode:'")
 	freq=freq:gsub("^%s*(.-)%s*$", "%1")
@@ -182,38 +185,198 @@ function model.getFreq(wlanInf)
 end
 
 -------------------------------------
--- Return TxMbps (Bit Rate)
+-- Return list of MAC to Hostname files
 -------------------------------------
-function model.getBitRate(wlanInf)
-	local br=""
-	br=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Bit Rate:'")
-	br=br:gsub("^%s*(.-)%s*$", "%1")
-	br=string.match(br, "Bit Rate: (.+)")
-	return br
+function mac2host(dir)
+	dir = dir or "/tmp/snrlog"
+	local i, list, popen = 0, {}, io.popen
+	local pfile = popen("ls -A " .. dir)
+	for filename in pfile:lines() do
+		i = i + 1
+		list[i] = filename
+	end
+	pfile:close()
+	return list
 end
 
 -------------------------------------
--- Return Signal
+-- Return Neighbor Link Info
 -------------------------------------
-function model.getSig(wlanInf)
-	local sig=""
-	siginfo=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Signal:'")
-	siginfo=siginfo:gsub("^%s*(.-)%s*$", "%1")
-	sig=string.match(siginfo, "Signal: (.-) %u-")
-	return sig
+function neighborLinkInfo()
+	local neighborLinkInfo={}
+	local wlan=get_ifname('wifi')
+	
+	local neighbors=iwinfo['nl80211'].assoclist(wlan)
+	local mac2node=mac2host("/tmp/snrlog")
+	local hosts_olsr=olsr.getCurrentNeighbors()
+	local name=""
+	
+	for stn in pairs(neighbors) do
+		stationInfo=iwinfo['nl80211'].assoclist(wlan)[stn]
+		local sig=tonumber(stationInfo.signal)
+		local nse=tonumber(stationInfo.noise)
+		local tx_rate=stationInfo.tx_rate/1000
+		tx_rate=adjust_rate(tx_rate,bandwidth)
+		local rx_rate=stationInfo.rx_rate/1000
+		rx_rate=adjust_rate(rx_rate,bandwidth)
+		
+		for i, mac_host in pairs(mac2node) do
+			local mac=string.match(mac_host, "^(.-)\-")
+			mac=mac:upper()
+			local node=string.match(mac_host, "\-(.*)")
+			if stn == mac then
+				name=node
+			end
+		end
+		
+		local ip=os.capture("nslookup "..name)
+		ip=string.match(ip, "Address 1: (.*)")
+		ip=ip:gsub("^%s*(.-)%s*$", "%1")
+		
+		local linkType=""
+		local lq=""
+		local nlq=""
+		for addr,info in pairs(hosts_olsr) do
+			if addr == ip then
+				linkType=info['linkType']
+				lq=tonumber(info['linkQuality'])*100
+				nlq=tonumber(info['neighborLinkQuality'])*100
+			end
+		end
+		neighborLinkInfo[name]={}
+		neighborLinkInfo[name]["tx_rate"]=tx_rate
+		neighborLinkInfo[name]["rx_rate"]=rx_rate
+		neighborLinkInfo[name]["signal"]=sig
+		neighborLinkInfo[name]["noise"]=nse
+		neighborLinkInfo[name]["lq"]=lq
+		neighborLinkInfo[name]["nlq"]=nlq
+		neighborLinkInfo[name]["link_type"]=linkType
+--		print("Node: "..name)
+--		print("TX br: "..tx_rate)
+--		print("RX br: "..rx_rate)
+--		print("Sig: "..sig)
+--		print("Noise: "..nse)
+--		print("LQ: "..lq.."% NLQ: "..nlq.."%")
+--		print("Link Type: "..linkType)
+	end
+	return neighborLinkInfo
 end
 
 -------------------------------------
--- Return Noise
+-- Return locally hosted services (for sysinfo.json)
 -------------------------------------
-function model.getNoise(wlanInf)
-	local nse=""
-	siginfo=os.capture("iwinfo " .. wlanInf .. " info | egrep 'Signal:'")
-	siginfo=siginfo:gsub("^%s*(.-)%s*$", "%1")
-	nse=string.match(siginfo, "Noise: (.-) %u-")
-	return nse
+function local_services()
+	local filelines={}
+	local lclsrvs={}
+	local lclsrvfile=io.open("/etc/config/services", "r")
+	if lclsrvfile~=nil then
+		for line in lclsrvfile:lines() do
+			table.insert(filelines, line)
+		end
+		lclsrvfile:close()
+		for pos,val in pairs(filelines) do
+			local service={}
+			local link,protocol,name = string.match(val,"^([^|]*)|(.+)|([^\t]*).*")
+			if link and protocol and name then
+				service['name']=name
+				service['protocol']=protocol
+				service['link']=link
+				table.insert(lclsrvs, service)
+			end
+		end
+	else
+		service['error']="Cannot read local services file"
+		table.insert(lclsrvs, service)
+	end
+	return lclsrvs
+--	info['services_local']=lclsrvs
 end
 
+-------------------------------------
+-- Return *All* Network Services
+-------------------------------------
+function all_services()
+	local services={}
+	local lines={}
+	local pos, val
+	local hfile=io.open("/var/run/services_olsr","r")
+	if hfile~=nil then
+		for line in hfile:lines() do
+			table.insert(lines,line)
+		end
+		hfile:close()
+		for pos,val in pairs(lines) do
+			local service={}
+			local link,protocol,name = string.match(val,"^([^|]*)|(.+)|([^\t]*)\t#.*")
+			if link and protocol and name then
+				service['link']=link
+				service['protocol']=protocol
+				service['name']=name
+				table.insert(services,service)
+			end
+		end
+	else
+		service['error']="Cannot read services file"
+		table.insert(services,service)
+	end
+	return services
+--	info['services']=services
+end
+
+-------------------------------------
+-- Return *All* Hosts
+-------------------------------------
+function all_hosts()
+	local hosts={}
+	local lines={}
+	local pos, val
+	local hfile=io.open("/var/run/hosts_olsr","r")
+	if hfile~=nil then
+		for line in hfile:lines() do
+			table.insert(lines,line)
+		end
+		hfile:close()
+		for pos,val in pairs(lines) do
+			local host={}
+
+			-- local data,comment = string.match(val,"^([^#;]+)[#;]*(.*)$")
+			local data,comment = string.match(val,"^([^#;]+)[#;]*(.*)$")
+
+			if data then
+				--local ip, name=string.match(data,"^%s*([%x%.%:]+)%s+(%S.*)\t%s*$")
+				local ip, name=string.match(data,"^([%x%.%:]+)%s+(%S.*)\t%s*$")
+				if ip and name then
+					if not string.match(name,"^(dtdlink[.]).*") then
+						if not string.match(name,"^(mid[0-9][.]).*") then
+							host['name']=name
+							host['ip']=ip
+							table.insert(hosts,host)
+						end
+					end
+				end
+			end
+		end
+	else
+		host['error']="Cannot read hosts file"
+		table.insert(hosts,host)
+	end
+	info['hosts']=hosts
+end
+-------------------------------------
+-- Return link_info (for sysinfo.json)
+-------------------------------------
+function link_info()
+	local linkinfo={}
+--	local linkinfo['link_info']={}
+	for name, info in pairs(neighborLinkInfo()) do
+		linkinfo[name]={}
+		for key, value in pairs(info) do
+			linkinfo[name][key]=value
+		end
+	end
+	return linkinfo
+--	info['link_info']=linkinfo
+end
 -------------------------------------
 -- Return Channel for Radio
 -- @param radio Radio Device.

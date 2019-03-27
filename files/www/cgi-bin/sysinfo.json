@@ -45,7 +45,6 @@ local json = require ("luci.jsonc")
 -- Function extensions
 os.capture = capture
 
-
 -- ==== MAIN =====
 ctx = uci.cursor()
 if not ctx then
@@ -55,7 +54,7 @@ end
 info={}
 
 -- API version
-info['api_version']="1.6"
+info['api_version']="1.7"
 
 
 -- NODE name
@@ -84,18 +83,13 @@ info['node_details']['firmware_version']=aredn_info.getFirmwareVersion()
 -- Mesh RF info
 info['meshrf']={}
 local radio=aredn_info.getMeshRadioDevice()
-local wlanInf=""
-wlanInf=os.capture("uci -q get network.wifi.ifname")
-wlanInf=wlanInf:gsub("^%s*(.-)%s*$", "%1")
+
 if ( radio ~= nill and radio ~= "" and wlanInf ~= nill and wlanInf ~= "" ) then
 	info['meshrf']['status']="on"
 	info['meshrf']['ssid']=aredn_info.getSSID()
 	info['meshrf']['channel']=aredn_info.getChannel(radio)
 	info['meshrf']['chanbw']=aredn_info.getChannelBW(radio)
-	info['meshrf']['txmbps']=aredn_info.getBitRate(wlanInf)
-	info['meshrf']['freq']=aredn_info.getFreq(wlanInf)
-	info['meshrf']['signal']=aredn_info.getSig(wlanInf)
-	info['meshrf']['noise']=aredn_info.getNoise(wlanInf)
+	info['meshrf']['freq']=aredn_info.getFreq()
 else
 	info['meshrf']['status']="off"
 end
@@ -154,95 +148,28 @@ info['interfaces']=tif
 
 -- HOSTS
 if string.find(nixio.getenv("QUERY_STRING"):lower(),"hosts=1") then
-	local hosts={}
-	local lines={}
-	local pos, val
-	local hfile=io.open("/var/run/hosts_olsr","r")
-	if hfile~=nil then
-		for line in hfile:lines() do
-			table.insert(lines,line)
-		end
-		hfile:close()
-		for pos,val in pairs(lines) do
-			local host={}
-
-			-- local data,comment = string.match(val,"^([^#;]+)[#;]*(.*)$")
-			local data,comment = string.match(val,"^([^#;]+)[#;]*(.*)$")
-
-			if data then
-				--local ip, name=string.match(data,"^%s*([%x%.%:]+)%s+(%S.*)\t%s*$")
-				local ip, name=string.match(data,"^([%x%.%:]+)%s+(%S.*)\t%s*$")
-				if ip and name then
-					if not string.match(name,"^(dtdlink[.]).*") then
-						if not string.match(name,"^(mid[0-9][.]).*") then
-							host['name']=name
-							host['ip']=ip
-							table.insert(hosts,host)
-						end
-					end
-				end
-			end
-		end
-	else
-		host['error']="Cannot read hosts file"
-		table.insert(hosts,host)
-	end
-	info['hosts']=hosts
+	info['hosts']=all_hosts()
 end
 
 -- SERVICES
 if string.find(nixio.getenv("QUERY_STRING"):lower(),"services=1") then
-	local services={}
-	local lines={}
-	local pos, val
-	local hfile=io.open("/var/run/services_olsr","r")
-	if hfile~=nil then
-		for line in hfile:lines() do
-			table.insert(lines,line)
-		end
-		hfile:close()
-		for pos,val in pairs(lines) do
-			local service={}
-			local link,protocol,name = string.match(val,"^([^|]*)|(.+)|([^\t]*)\t#.*")
-			if link and protocol and name then
-				service['link']=link
-				service['protocol']=protocol
-				service['name']=name
-				table.insert(services,service)
-			end
-		end
-	else
-		service['error']="Cannot read services file"
-		table.insert(services,service)
-	end
-	info['services']=services
+	info['services']=all_services()
 end
 
 -- LOCALLY HOSTED SERVICES ONLY
 if string.find(nixio.getenv("QUERY_STRING"):lower(),"services_local=1") then
-	local filelines={}
-	local lclsrvs={}
-	local lclsrvfile=io.open("/etc/config/services", "r")
-	if lclsrvfile~=nil then
-		for line in lclsrvfile:lines() do
-			table.insert(filelines, line)
-		end
-		lclsrvfile:close()
-		for pos,val in pairs(filelines) do
-			local service={}
-			local link,protocol,name = string.match(val,"^([^|]*)|(.+)|([^\t]*).*")
-			if link and protocol and name then
-				service['name']=name
-				service['protocol']=protocol
-				service['link']=link
-				table.insert(lclsrvs, service)
-			end
-		end
-	else
-		service['error']="Cannot read local services file"
-		table.insert(lclsrvs, service)
-	end
-	info['services_local']=lclsrvs
+	info['services_local']=local_services()
+end
+
+-- LOCAL NEIGHBORS LINK INFO
+if string.find(nixio.getenv("QUERY_STRING"):lower(),"link_info=1") then
+	info['link_info']=link_info()
+end
+
+-- MESHMAP INFO
+if string.find(nixio.getenv("QUERY_STRING"):lower(),"meshmap=1") then
+	info['services_local']=local_services()
+	info['link_info']=link_info()
 end
 
 -- Output the HTTP header for JSON
