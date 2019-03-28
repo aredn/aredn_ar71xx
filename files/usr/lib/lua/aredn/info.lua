@@ -236,8 +236,8 @@ function model.neighborLinkInfo()
 				neighborLinkInfo[name]["rx_rate"]=rx_rate
 				neighborLinkInfo[name]["signal"]=sig
 				neighborLinkInfo[name]["noise"]=nse
-				neighborLinkInfo[name]["lq"]=math.floor(lq)
-				neighborLinkInfo[name]["nlq"]=math.floor(nlq)
+				neighborLinkInfo[name]["lq"]=round2(lq)
+				neighborLinkInfo[name]["nlq"]=round2(nlq)
 				neighborLinkInfo[name]["link_type"]=linkType
 			end
 		end
