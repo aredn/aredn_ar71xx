@@ -69,9 +69,15 @@ function model.getCurrentNeighbors()
     info[remip]['linkType']= model.getOLSRInterfaceType(v['olsrInterface'])    -- RF or DTD or TUN
     info[remip]['linkQuality']=v['linkQuality']
     info[remip]['neighborLinkQuality']=v['neighborLinkQuality']
-    host = string.gsub(remhost,"dtdlink%.", "")
-    host = string.gsub(host,"mid%d.", "")
-    info[remip]['hostname']=host
+	if remhost ~= nil then
+    	host = string.gsub(remhost,"dtdlink%.", "")
+	end
+	if host ~= nil then
+    	host = string.gsub(host,"mid%d.", "")
+    	info[remip]['hostname']=host
+	else 
+		info[remip]['hostname']=remip
+	end
     -- services
     -- info[remip]['services']={}
     -- get TxMBPS
