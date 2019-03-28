@@ -319,6 +319,26 @@ function model.getDefaultGW()
 	return gw
 end
 
+-------------------------------------
+-- Returns Table of current DHCP leases 
+-------------------------------------
+function model.getCurrentDHCPLeases()
+    local lines={}
+    local leases={}
+    local filename="/tmp/dhcp.leases"
+    if file_exists(filename) then
+        for line in io.lines(filename) do table.insert(lines,line) end
+        for n, l in pairs(lines) do
+	        local lease={}
+	        local data=l:splitWhiteSpace()
+	        lease["mac"]=data[2]
+	        lease["ip"]=data[3]
+	        lease["host"]=data[4]
+	        table.insert(leases, lease)
+        end
+    end
+    return leases
+end
 
 
 return model
