@@ -322,8 +322,6 @@ for page, comps in pairs(qsset) do
 				info['pages'][page][comp]=getServicesByNode()
 			elseif comp=="byservice" then
 				info['pages'][page][comp]=getServicesByService()
-			elseif comp=="dhcpleases" then
-				info['pages'][page][comp]=aredn_info.getCurrentDHCPLeases()
 			end
 		end
 	elseif page=="chart" then
