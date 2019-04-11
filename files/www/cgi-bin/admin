@@ -512,6 +512,9 @@ if($parms{button_refresh_pkg})
 if($parms{button_rm_pkg} and $parms{rm_pkg} ne "default" and not $permpkg{$parms{rm_pkg}})
 {
     @pkg_output = `opkg remove $parms{rm_pkg} 2>&1`;
+    if(@pkg_output eq '' || @pkg_output =~ /^\s*$/) {
+        push @pkg_output, "Package removed succssfully, no extra output";
+    }
 }
 
 # generate data structures
