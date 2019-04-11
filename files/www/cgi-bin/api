@@ -38,9 +38,11 @@ require("uci")
 require("aredn.uci")
 require("aredn.utils")
 require("aredn.http")
+local aredn_olsr = require("aredn.olsr")
 local aredn_info = require("aredn.info")
 require("nixio")
 local json = require("luci.jsonc")
+require("iwinfo")
 
 -- Function extensions
 os.capture = capture
@@ -60,7 +62,6 @@ function getSysinfo()
 	info['loads']=aredn_info.getLoads()
 	return info
 end
-
 
 function getStatusMeshRF()
 	local info={}
@@ -92,39 +93,159 @@ function getLocationInfo()
 	return info
 end
 
-function getCurrentNeighbors()
-	local info={}
-	local links=getOLSRLinks()
-	for k,v in pairs(links) do
-		local host
-		local remip=v['remoteIP']
-		local remhost=nslookup(remip)
-		info[remip]={}
-		info[remip]['olsrInterface']=v['olsrInterface']
-		info[remip]['linkType']= getInterfaceType(v['olsrInterface'])
-		info[remip]['linkQuality']=v['linkQuality']*100
-		info[remip]['neighborLinkQuality']=v['neighborLinkQuality']*100
-		host = string.gsub(remhost,"dtdlink%.", "")
-		host = string.gsub(host,"mid%d.", "")
-		info[remip]['hostname']=host
-		-- services
-		info[remip]['services']={}
-		-- get TxMBPS
-		info[remip]['rate']="0"
-	end
-	return info
-end
-
-function getServicesByNode()
-	local nodes=getAllHosts()
-   	return nodes
-end
-
 function getFreeMemory()
 	local info = aredn_info.getFreeMemory()
 	return info
 end
 
+function getSignal(realtime) 
+	local defnoise=-95
+	local ol={}
+	local dpa={}  -- datapoint table/array
+	local dirname="/tmp/snrlog"
+	local values={}
+	local counter=0
+	local datepattern="(%d+)/(%d+)/(%d+)%s(%d+):(%d+):(%d+)"
+
+	local parms={}
+	parms=parsecgi(nixio.getenv("QUERY_STRING") or "")
+
+	-- make sure snrlog dir is created
+	if dir_exists(dirname) then
+		nixio.fs.mkdir(dirname)
+	end
+
+	-- get wifi ifname
+	local wifiiface=get_ifname("wifi")
+
+	-- get bandwidth
+	local radio=aredn_info.getMeshRadioDevice()
+	local bandwidth=aredn_info.getChannelBW(radio)
+
+	if realtime then
+		-- REALTIME
+		local d=os.date("%H:%M:%S")
+		local n   -- noise
+		local m   -- margin
+		local s   -- signal
+		local dp={} -- datapoint
+		local yinfo={}
+
+		if (parms.device=="strongest" or parms.device=="" or (not parms.device)) then
+			-- REALTIME/STRONGEST SIGNAL
+			-- get radio noise floor
+			n=iwinfo["nl80211"].noise(wifiiface)
+			if (n < -101 or n > -50) then
+				n=defnoise
+			end
+			-- get strongest signal
+			s=iwinfo["nl80211"].signal(wifiiface)
+			m=tonumber(s)-tonumber(n)
+			if s==0 then
+				s="null"
+			end
+			tx_rate="N/A"
+			rx_rate="N/A"
+			tx_mcs="N/A"
+			rx_mcs="N/A"
+			dp.tx_rate=tx_rate
+			dp.rx_rate=rx_rate
+			dp.tx_mcs=tx_mcs
+			dp.rx_mcs=rx_mcs
+		else
+			-- REALTIME/SPECIFIC SIGNAL
+			-- split out device to mac-host
+			local mac,host=string.match(parms.device,"([^-]*)-(.*)")
+			local macinfo=iwinfo["nl80211"].assoclist(wifiiface)[mac:upper()]
+			n=macinfo.noise
+			s=macinfo.signal
+			n=tonumber(n)
+			s=tonumber(s)
+			m=s-n
+			tx_rate=macinfo.tx_rate/1000
+			tx_rate=adjust_rate(tx_rate,bandwidth)
+			rx_rate=macinfo.rx_rate/1000
+			rx_rate=adjust_rate(rx_rate,bandwidth)
+			tx_mcs=macinfo.tx_mcs
+			rx_mcs=macinfo.rx_mcs
+			m=tonumber(s)-tonumber(n)
+		end
+
+		if s==0 then
+			s="null"
+		end
+
+		table.insert(yinfo,s)
+		table.insert(yinfo,n)
+		dp.label=d
+		dp.y=yinfo
+		dp.m=m
+		dp.tx_rate=tx_rate
+		dp.rx_rate=rx_rate
+		dp.tx_mcs=tx_mcs
+		dp.rx_mcs=rx_mcs
+		table.insert(dpa,dp)
+		table.insert(ol,dpa)
+	else
+		-- ARCHIVE
+		local filename
+		if not parms.device or parms.device=="" then
+			-- get the first file from dirlist
+			for maclist in nixio.fs.glob(dirname.."/".."*") do
+				filename=maclist
+				parms.device=maclist
+				break
+			end
+		else
+			filename=dirname.."/"..parms.device
+		end
+
+		if filename then
+			for line in io.lines(filename) do
+				local yinfo={}
+				local dp={}
+				local dt,s,n,tm,tr,rm,rr=line:match("(.*)%,(.*)%,(.*),(.*),(.*),(.*),(.*)")
+				local dtm,dtd,dty,dth,dtmin,dts=dt:match(datepattern)
+				local dtseconds=os.time({month=dtm,day=dtd,year=dty,hour=dth,min=dtmin,sec=dts})
+				dtseconds=dtseconds*1000
+				dtseconds=math.floor(dtseconds)
+				n=tonumber(n)
+
+				if s~="null" then
+					s=tonumber(s)
+					m=s-n
+				else
+					m="N/A"
+				end
+				table.insert(yinfo,s)
+				table.insert(yinfo,n)
+				dp.label=dt
+				dp.x=dtseconds
+				dp.y=yinfo
+				dp.m=m
+				dp.tx_rate=tr
+				dp.rx_rate=rr
+				dp.tx_mcs=tm
+				dp.rx_mcs=rm
+				table.insert(dpa,dp)
+			end
+			table.insert(ol,dpa)
+		end
+	end
+	return ol
+end
+
+function getScanList()
+	local device = aredn_info.getMeshRadioDevice()
+	local scanlist = iwinfo["nl80211"].scanlist(device)
+	return scanlist
+end
+
+function getFreqList()
+	local device = aredn_info.getMeshRadioDevice()
+	local freqlist = iwinfo["nl80211"].freqlist(device)
+	return freqlist
+end
 
 -- ==== MAIN =====
 ctx = uci.cursor()
@@ -175,6 +296,8 @@ for page, comps in pairs(qsset) do
 				info['pages'][page][comp]=aredn_info.getOLSRInfo()
 			elseif comp=="location" then
 				info['pages'][page][comp]=getLocationInfo()
+			elseif comp=="freqlist" then
+				info['pages'][page][comp]=getFreqList()
 			end
 		end
 	elseif page=="mesh" then
@@ -182,11 +305,11 @@ for page, comps in pairs(qsset) do
 			if comp=="sysinfo" then
 				info['pages'][page][comp]=getSysinfo()
 			elseif comp=="localhosts" then
-				info['pages'][page][comp]={}
+				info['pages'][page][comp]=aredn_info.getLocalHosts()
 			elseif comp=="remotenodes" then
 				info['pages'][page][comp]={}
 			elseif comp=="currentneighbors" then
-				info['pages'][page][comp]=getCurrentNeighbors()
+				info['pages'][page][comp]=aredn_olsr.getCurrentNeighbors()
 			elseif comp=="previousneighbors" then
 				info['pages'][page][comp]={}
 			end
@@ -200,6 +323,20 @@ for page, comps in pairs(qsset) do
 			elseif comp=="byservice" then
 				info['pages'][page][comp]=getServicesByService()
 			end
+		end
+	elseif page=="chart" then
+		for i,comp in pairs(comps:split(',')) do
+			if comp=="realtime" then
+				info['pages'][page][comp]=getSignal(true)
+			elseif comp=="archive" then
+				info['pages'][page][comp]=getSignal(false)
+			end
+		end
+	elseif page=="scan" then
+		for i,comp in pairs(comps:split(',')) do
+				if comp=="scanlist" then
+					info['pages'][page][comp]=getScanList()
+				end
 		end
 	end
 end

@@ -9,6 +9,7 @@
 004-add-lhg-5hpnd-xl.patch
 004-add-ldf-5nd.patch
 005-add-haplite-new-model.patch
+006-add-lhg-5hpnd.patch
 700-cpe-diags.patch
 701-extended-spectrum.patch
 702-enable-country-hx.patch
@@ -21,5 +22,4 @@
 709-iperf-fw-restart.patch
 710-no-ping6-traceroute6.patch
 711-nano-xw-switch-config.patch
-712-auto-distance-settings.patch
 713-delay-snmpd-startup.patch
