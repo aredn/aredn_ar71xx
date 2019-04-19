@@ -191,54 +191,35 @@ function model.neighborLinkInfo()
 	local neighborLinkInfo={}
 	local wlan=get_ifname('wifi')
 	
-	local neighbors=iwinfo['nl80211'].assoclist(wlan)
+	local RFneighbors=iwinfo['nl80211'].assoclist(wlan)
 	local mac2node=mac2host()
 	local hosts_olsr=olsr.getCurrentNeighbors()
 	local name=""
 	
-	for stn in pairs(neighbors) do
-		stationInfo=iwinfo['nl80211'].assoclist(wlan)[stn]
-		if stationInfo ~= nil then
-			local sig=tonumber(stationInfo.signal)
-			local nse=tonumber(stationInfo.noise)
-			local tx_rate=stationInfo.tx_rate/1000
-			tx_rate=adjust_rate(tx_rate,bandwidth)
-			local rx_rate=stationInfo.rx_rate/1000
-			rx_rate=adjust_rate(rx_rate,bandwidth)
-		
-			for i, mac_host in pairs(mac2node) do
-				local mac=string.match(mac_host, "^(.-)\-")
-				mac=mac:upper()
-				local node=string.match(mac_host, "\-(.*)")
-				if stn == mac then
-					name=node
+	for ip, info in pairs(hosts_olsr) do
+		neighborLinkInfo[info["hostname"]]={}
+		for key, value in pairs(info) do
+			-- dont need hostname, we already have it
+			if key ~= "hostname" then
+				neighborLinkInfo[info["hostname"]][key]=value
+			end
+			if key == "linkType" and value == "RF" then
+				for i, mac_host in pairs(mac2node) do
+					local mac=string.match(mac_host, "^(.-)\-")
+					mac=mac:upper()
+					local node=string.match(mac_host, "\-(.*)")
+					if info["hostname"] == node then
+						for stn in pairs(RFneighbors) do
+							stnInfo=iwinfo['nl80211'].assoclist(wlan)[mac]
+							if stnInfo ~= nil then
+								neighborLinkInfo[info["hostname"]]["signal"]=tonumber(stnInfo.signal)
+								neighborLinkInfo[info["hostname"]]["noise"]=tonumber(stnInfo.noise)
+								neighborLinkInfo[info["hostname"]]["tx_rate"]=adjust_rate(stnInfo.tx_rate/1000,bandwidth)
+								neighborLinkInfo[info["hostname"]]["rx_rate"]=adjust_rate(stnInfo.rx_rate/1000,bandwidth)
+							end
+						end
+					end
 				end
-			end
-		
-			local ip=os.capture("nslookup "..name)
-			ip=string.match(ip, "Address 1: (.*)")
-			if ip ~= nil then
-				ip=ip:gsub("^%s*(.-)%s*$", "%1")
-			end
-			local linkType=""
-			local lq=""
-			local nlq=""
-			for addr,info in pairs(hosts_olsr) do
-				if addr == ip then
-					linkType=info['linkType']
-					lq=tonumber(info['linkQuality'])*100
-					nlq=tonumber(info['neighborLinkQuality'])*100
-				end
-			end
-			if name ~= nil and linkType ~= "" then
-				neighborLinkInfo[name]={}
-				neighborLinkInfo[name]["tx_rate"]=tx_rate
-				neighborLinkInfo[name]["rx_rate"]=rx_rate
-				neighborLinkInfo[name]["signal"]=sig
-				neighborLinkInfo[name]["noise"]=nse
-				neighborLinkInfo[name]["lq"]=round2(lq)
-				neighborLinkInfo[name]["nlq"]=round2(nlq)
-				neighborLinkInfo[name]["link_type"]=linkType
 			end
 		end
 	end
