@@ -185,48 +185,6 @@ function model.getFreq()
 end
 
 -------------------------------------
--- Return Neighbor Link Info
--------------------------------------
-function model.neighborLinkInfo()
-	local neighborLinkInfo={}
-	local wlan=get_ifname('wifi')
-	
-	local RFneighbors=iwinfo['nl80211'].assoclist(wlan)
-	local mac2node=mac2host()
-	local hosts_olsr=olsr.getCurrentNeighbors()
-	local name=""
-	
-	for ip, info in pairs(hosts_olsr) do
-		neighborLinkInfo[info["hostname"]]={}
-		for key, value in pairs(info) do
-			-- dont need hostname, we already have it
-			if key ~= "hostname" then
-				neighborLinkInfo[info["hostname"]][key]=value
-			end
-			if key == "linkType" and value == "RF" then
-				for i, mac_host in pairs(mac2node) do
-					local mac=string.match(mac_host, "^(.-)\-")
-					mac=mac:upper()
-					local node=string.match(mac_host, "\-(.*)")
-					if info["hostname"] == node then
-						for stn in pairs(RFneighbors) do
-							stnInfo=iwinfo['nl80211'].assoclist(wlan)[mac]
-							if stnInfo ~= nil then
-								neighborLinkInfo[info["hostname"]]["signal"]=tonumber(stnInfo.signal)
-								neighborLinkInfo[info["hostname"]]["noise"]=tonumber(stnInfo.noise)
-								neighborLinkInfo[info["hostname"]]["tx_rate"]=adjust_rate(stnInfo.tx_rate/1000,bandwidth)
-								neighborLinkInfo[info["hostname"]]["rx_rate"]=adjust_rate(stnInfo.rx_rate/1000,bandwidth)
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-	return neighborLinkInfo
-end
-
--------------------------------------
 -- Return locally hosted services (for sysinfo.json)
 -------------------------------------
 function model.local_services()
@@ -323,20 +281,6 @@ function model.all_hosts()
 		table.insert(hosts,host)
 	end
 	return hosts
-end
-
--------------------------------------
--- Return link_info (for sysinfo.json)
--------------------------------------
-function model.link_info()
-	local linkinfo={}
-	for name, info in pairs(model.neighborLinkInfo()) do
-		linkinfo[name]={}
-		for key, value in pairs(info) do
-			linkinfo[name][key]=value
-		end
-	end
-	return linkinfo
 end
 
 -------------------------------------
