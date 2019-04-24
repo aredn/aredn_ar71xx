@@ -984,7 +984,7 @@ sub hardware_info
   %model = (
     'GL.iNet GL-AR150' => {
       'name'            => 'GL.iNet GL-AR150',
-      'comment'         => 'EXPERIMENTAL',
+      'comment'         => '',
       'supported'       => '1',
       'maxpower'        => '18',
       'pwroffset'       => '0',
