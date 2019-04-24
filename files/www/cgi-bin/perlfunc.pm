@@ -986,7 +986,7 @@ sub hardware_info
       'name'            => 'GL.iNet GL-AR150',
       'comment'         => 'EXPERIMENTAL',
       'supported'       => '1',
-      'maxpower'        => '20',
+      'maxpower'        => '18',
       'pwroffset'       => '0',
       'usechains'       => 0,
       'rfband'          => '2400',
