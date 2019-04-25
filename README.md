@@ -137,7 +137,7 @@ The Mikrotik hAP AC Lite, Ubiquiti AirRouter, and AirRouter HP are pre-configure
 
 The GL.iNet GL-AR150 is pre-configured with the following VLANS:
 
-* Port labeled "WAN": untagged = AREDN LAN, vlan 1 = AREDN WAN, vlan 2 = DtDLink (device to device)
+* Port labeled "WAN": untagged = AREDN WAN
 * Port labeled "LAN": untagged = AREDN LAN, vlan 2 = DtDLink (device to device)
 
 ## Submitting Bug Reports
