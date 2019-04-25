@@ -135,6 +135,11 @@ The Mikrotik hAP AC Lite, Ubiquiti AirRouter, and AirRouter HP are pre-configure
 * Port 5: DtDLink Port Mesh Routing -- Connect to another mesh node or 8021.q switch. Packets in/out of this port must be vlan 2 tagged, other packets are ignored.
 * Ports 2-4: LAN devices -- Packets in/out of this port are expected to be untagged. The mesh node will (default) DHCP assign an IP address to your computer, ipCam, voip phone, etc. connected to these ports.
 
+The GL.iNet GL-AR150 is pre-configured with the following VLANS:
+
+* Port labeled "WAN": untagged = AREDN LAN, vlan 1 = AREDN WAN, vlan 2 = DtDLink (device to device)
+* Port labeled "LAN": untagged = AREDN LAN, vlan 2 = DtDLink (device to device)
+
 ## Submitting Bug Reports
 
 Please submit all issues to http://github.com/aredn/aredn_ar71xx/issues
