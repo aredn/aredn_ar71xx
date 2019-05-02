@@ -49,15 +49,12 @@ model = {}
 -------------------------------------
 -- BASIC SETUP page handler
 -------------------------------------
-function page_handler(data)
-	return data
-	--[[
+function model.page_handler(data)
 	local result = {}
-	result['result']="OK"
+	result="OK"
 	-- validate fields
 	-- persist settings
 	return result
-	--]]
 end
 
 return model

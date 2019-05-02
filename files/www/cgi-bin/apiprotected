@@ -113,7 +113,6 @@ info={}
 local headers = http.get_headers()
 local qsset = {}
 
-info['args']=arg
 if (arg[1]~=nil and arg[2]~=nil) then			-- commandline call support
 	qsset[arg[1]]=arg[2]
 	process_get_request(qsset)
