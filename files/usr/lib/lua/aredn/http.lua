@@ -35,8 +35,19 @@
 --]]
 local h = require("socket.http")
 local json = require("luci.jsonc")
+local nixio = require("nixio")
 
-function fetch_json(url)
+local model = {}
+
+function model.get_headers()
+  return nixio.getenv()
+end
+
+function model.get_post_body()
+  return io.read("*all")
+end
+
+function model.fetch_json(url)
   resp, status_code, headers, status_message=h.request(url)
   if status_code==200 then
     local j=json.parse(resp)
@@ -44,13 +55,13 @@ function fetch_json(url)
   end
 end
 
-function http_header()
+function model.http_header()
    print("Content-type: text/html\r")
    print("Cache-Control: no-store\r")
    print("\n")
 end
 
-function json_header()
+function model.json_header()
    print("Content-type: application/json\r")
    print("Cache-Control: no-store\r")
    print("Access-Control-Allow-Origin: *\r")
@@ -65,7 +76,7 @@ local function cgidecode(str)
   return (str:gsub('+', ' '):gsub("%%(%x%x)", function(xx) return string.char(tonumber(xx, 16)) end))
 end
 
-function parsecgi(str)
+function model.parsecgi(str)
   local rv = {}
   for pair in str:gmatch"[^&]+" do
     local key, val = pair:match"([^=]*)=(.*)"
@@ -75,3 +86,4 @@ function parsecgi(str)
 end
 -- Written by RiciLake -- END
 
+return model

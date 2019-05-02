@@ -38,7 +38,7 @@ require("uci")
 require("aredn.utils")
 local aredn_info = require("aredn.info")
 local aredn_olsr = require("aredn.olsr")
-require("aredn.http")
+local http = require("aredn.http")
 require("nixio")
 local ipc = require("luci.ip")
 local json = require ("luci.jsonc")
@@ -174,7 +174,7 @@ if string.find(nixio.getenv("QUERY_STRING"):lower(),"meshmap=1") then
 end
 
 -- Output the HTTP header for JSON
-json_header()
+http.json_header())
 
 -- Output the info table as json
 print(json.stringify(info,true))

@@ -37,15 +37,69 @@
 require("uci")
 require("aredn.uci")
 require("aredn.utils")
-require("aredn.http")
+require("nixio")
+require("iwinfo")
+local http = require("aredn.http")
 local aredn_olsr = require("aredn.olsr")
 local aredn_info = require("aredn.info")
-require("nixio")
 local json = require("luci.jsonc")
-require("iwinfo")
 
 -- Function extensions
 os.capture = capture
+
+-------------------------------------
+-- GET querystring/cmdline handler
+-------------------------------------
+function process_get_request(topiccomps)
+	info['topics']={}
+
+	for topic, comps in pairs(topiccomps) do
+		if not setContains(info['topics'],topic) then
+			info['topics'][topic]={}
+		end
+
+		if topic=="apiprotected" then
+			info['topics'][topic]=nil
+			info['api_help']="AREDN Protected API. This API's primary function is to be used by the Web UI and calls are protected via uhttpd"
+		elseif topic=="dhcp" then
+			for i,comp in pairs(comps:split(',')) do
+				if comp=="currentleases" then
+					info['topics'][topic][comp]=aredn_info.getCurrentDHCPLeases()
+				end
+			end
+		end
+	end
+end
+
+-------------------------------------
+-- POST json handler
+-------------------------------------
+local function process_post_request(jsondata)
+	if setContains(jsondata, "page") and setContains(jsondata, "data") then
+		if jsondata['page']=="basic_setup" then
+			local ph = require("aredn.page.handler.basic_setup")
+			info['result'] = ph.page_handler(jsondata['data'])
+		elseif jsondata['page']=="port_forwarding" then
+			info['result'] = {}
+		end
+
+
+		for key, value in pairs(jsondata) do
+			if key=="apiprotected" then
+				info['topics'][key]=nil
+				info['api_help']="AREDN Protected API. This API's primary function is to be used by the Web UI and calls are protected via uhttpd"
+			elseif key=="dhcp" then
+				for i,comp in pairs(value:split(',')) do
+					if comp=="currentleases" then
+						info['topics'][key][value]=aredn_info.getCurrentDHCPLeases()
+					end
+				end
+			end
+		end
+	else
+		info['error']="request must contains valid 'page' and 'data' elements"
+	end
+end
 
 -- ==== MAIN =====
 ctx = uci.cursor()
@@ -55,42 +109,38 @@ end
 
 info={}
 
--- get/process query string
-local qsset={}
-if (arg[1]==nil and arg[2]==nil) then
-	qs=nixio.getenv("QUERY_STRING")
+-- get headers
+local headers = http.get_headers()
+local qsset = {}
+
+info['args']=arg
+if (arg[1]~=nil and arg[2]~=nil) then			-- commandline call support
+	qsset[arg[1]]=arg[2]
+	process_get_request(qsset)
+elseif headers.REQUEST_METHOD == "GET" then		-- GET method
+	qs=headers.QUERY_STRING
 	if qs~="" then
 		qsset=parseQueryString(qs)
 	else
-		-- maybe default to a help page
 		qsset["apiprotected"]="help"
 	end
+	process_get_request(qsset, info)
+elseif headers.REQUEST_METHOD == "POST" then	-- POST method
+	if headers.CONTENT_TYPE == "application/json" then
+		local body = http.get_post_body()
+		local body_json = json.parse(body)
+		process_post_request(body_json)
+	else
+		print("Content_Type MUST be application/json")
+	end
 else
-	qsset[arg[1]]=arg[2]
-end
-
-info['topics']={}
-
-for topic, comps in pairs(qsset) do
-	if not setContains(info['topics'],topic) then
-		info['topics'][topic]={}
-	end
-
-	if topic=="apiprotected" then
-		info['topics'][topic]=nil
-		info['api_help']="AREDN Protected API. This API's primary function is to be used by the Web UI and calls are protected via uhttpd"
-	elseif page=="dhcp" then
-		for i,comp in pairs(comps:split(',')) do
-			if comp=="currentleases" then
-				info['topics'][topic][comp]=aredn_info.getCurrentDHCPLeases()
-			end
-		end
-	end
+	print("ERROR: request method can be either POST or GET or from commandline as: /apiprotected topic component")
+	os.exit()
 end
 
 -- Output the HTTP header for JSON
 -- json_header()
-json_header()
+http.json_header()
 
 -- Output the info table as json
 print(json.stringify(info,true))
