@@ -191,6 +191,32 @@ function string:splitWhiteSpace()
 	return t
 end
 
+-- returns true/false whether a string starts with a substring.  Ex.   s:startsWith("123")
+function string:startsWith(startingStr)
+	return self:sub(1, #startingStr) == startingStr
+end
+
+-- returns true/false whether a string ends with a substring.  Ex.   s:endsWith("456")
+function string:endsWith(ending)
+	return self:sub(-#ending) == ending
+end
+
+-- returns true/false whether a string contains whitespace
+function string:containsSpaces()
+	local rc
+	if self:find("%s") == nil then
+		rc=false
+	else
+		rc=true
+	end
+	return rc
+end
+
+-- returns true/false whether a string contains text
+function string:contains(text)
+	return self:match(text) and true or false	
+end
+
 function nslookup(ip)
         local hostname=nil
         if get_ip_type(ip)==1 then
