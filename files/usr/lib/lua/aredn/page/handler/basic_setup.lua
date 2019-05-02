@@ -51,28 +51,25 @@ model = {}
 -------------------------------------
 function model.page_handler(data)
 	local result = {}
+	local errors = {}
 	local vres
-
 
 	-- validate fields
 	vres=valid.nodeName(data.node_info.name)
-	if vres.rc==false then
-		if not setContains(result, "errors") then
-			result['errors']={}
-		end
-		table.insert(result['errors'], vres)
+	if vres~=true then
+		table.insert(errors, vres)
 	end
 
 	vres=valid.nodePassword(data.node_info.password)
-	if vres.rc==false then
-		if not setContains(result, "errors") then
-			result['errors']={}
-		end
-		table.insert(result['errors'], vres)
+	if vres~=true then
+		table.insert(errors, vres)
 	end
 
 	-- persist settings
-	if not setContains(result, "errors") then
+
+	if #errors > 0 then 
+		table.insert(result, errors)
+	else
 		result="ok"
 	end
 

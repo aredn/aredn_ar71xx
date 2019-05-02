@@ -44,41 +44,30 @@ require("aredn.utils")
 local model = {}
 
 -------------------------------------
--- Sample validator
--------------------------------------
-function model.foo(value)
-  local result = {}
-  result['rc'] = false
-  result['msg'] = "this did not validate due to foobar"
-  return result
-end
-
-
--------------------------------------
 -- Node name
 -------------------------------------
 function model.nodeName(value)
   local result = {}
-  result['rc'] = false
-  result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
-
+  local msgs = {}
+  
   if value==nil or value=="" then
-    result['msg'] = "Node name cannot be empty"
-    return result
+    table.insert(msgs, "Node name cannot be empty")
   end
 
   if value:containsSpaces() then
-    result['msg'] = "Node name cannot contain spaces"
-    return result
+    table.insert(msgs, "Node name cannot contain spaces")
   end
   
   if value:startsWith("_") then
-    result['msg'] = "Node name cannot start with an underscore"
-    return result
+    table.insert(msgs, "Node name cannot start with an underscore")
   end
 
-  result['rc'] = true
-  return result
+  if #msgs > 0 then 
+    result['msgs'] = msgs
+    result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    return result
+  end
+  return true
 end
 
 -------------------------------------
@@ -86,40 +75,35 @@ end
 -------------------------------------
 function model.nodePassword(value)
   local result = {}
-  result['rc'] = false
-  result['field'] = dbg.getinfo(1).name
-
+  local msgs = {}
+  
   if value==nil or value=="" then
-    result['msg'] = "Node password cannot be empty"
-    return result
+    table.insert(msgs, "Node password cannot be empty")
   end
 
   -- check for #
   if value:contains("#") then
-    result['msg'] = "Node password cannot contain # characters"
-    return result
+    table.insert(msgs, "Node password cannot contain # characters")
   end
 
    -- check for default password
   if value=="hsmm" then
-    result['msg'] = "Node password cannot be set to the default password."
-    return result
+    table.insert(msgs, "Node password cannot be set to the default password.")
   end
 
-  -- passed all the tests
-  result['rc'] = true
-  return result
+  if #msgs > 0 then 
+    result['msgs'] = msgs
+    result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    return result
+  end
+  return true
 end
 
 -------------------------------------
 -- Node Description
 -------------------------------------
 function model.nodeDescription(value)
-  local result = {}
-  result['rc'] = true
-  result['field'] = dbg.getinfo(1).name
-
-  return result
+  return true
 end
 
 
