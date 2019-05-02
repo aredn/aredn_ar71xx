@@ -38,7 +38,7 @@ require("uci")
 require("aredn.uci")
 require("aredn.utils")
 require("nixio")
-local validate = require("aredn.validators")
+local valid = require("aredn.validators")
 local json = require("luci.jsonc")
 
 -- Function extensions
@@ -51,9 +51,31 @@ model = {}
 -------------------------------------
 function model.page_handler(data)
 	local result = {}
-	result="OK"
+	local vres
+
+
 	-- validate fields
+	vres=valid.nodeName(data.node_info.name)
+	if vres.rc==false then
+		if not setContains(result, "errors") then
+			result['errors']={}
+		end
+		table.insert(result['errors'], vres)
+	end
+
+	vres=valid.nodePassword(data.node_info.password)
+	if vres.rc==false then
+		if not setContains(result, "errors") then
+			result['errors']={}
+		end
+		table.insert(result['errors'], vres)
+	end
+
 	-- persist settings
+	if not setContains(result, "errors") then
+		result="ok"
+	end
+
 	return result
 end
 

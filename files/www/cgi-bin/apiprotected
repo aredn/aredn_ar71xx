@@ -79,22 +79,7 @@ local function process_post_request(jsondata)
 		if jsondata['page']=="basic_setup" then
 			local ph = require("aredn.page.handler.basic_setup")
 			info['result'] = ph.page_handler(jsondata['data'])
-		elseif jsondata['page']=="port_forwarding" then
-			info['result'] = {}
-		end
-
-
-		for key, value in pairs(jsondata) do
-			if key=="apiprotected" then
-				info['topics'][key]=nil
-				info['api_help']="AREDN Protected API. This API's primary function is to be used by the Web UI and calls are protected via uhttpd"
-			elseif key=="dhcp" then
-				for i,comp in pairs(value:split(',')) do
-					if comp=="currentleases" then
-						info['topics'][key][value]=aredn_info.getCurrentDHCPLeases()
-					end
-				end
-			end
+		-- elseif jsondata['page']=="more_pages_here" then
 		end
 	else
 		info['error']="request must contains valid 'page' and 'data' elements"

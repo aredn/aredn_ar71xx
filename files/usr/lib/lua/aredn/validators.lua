@@ -35,7 +35,9 @@
 --]]
 
 local json = require("luci.jsonc")
+local dbg = require("debug")
 require("aredn.utils")
+
 -------------------------------------
 -- Public API is attached to table
 -------------------------------------
@@ -58,6 +60,7 @@ end
 function model.nodeName(value)
   local result = {}
   result['rc'] = false
+  result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
 
   if value==nil or value=="" then
     result['msg'] = "Node name cannot be empty"
@@ -74,7 +77,6 @@ function model.nodeName(value)
     return result
   end
 
-  -- passed all the tests
   result['rc'] = true
   return result
 end
@@ -85,6 +87,7 @@ end
 function model.nodePassword(value)
   local result = {}
   result['rc'] = false
+  result['field'] = dbg.getinfo(1).name
 
   if value==nil or value=="" then
     result['msg'] = "Node password cannot be empty"
@@ -114,6 +117,8 @@ end
 function model.nodeDescription(value)
   local result = {}
   result['rc'] = true
+  result['field'] = dbg.getinfo(1).name
+
   return result
 end
 
