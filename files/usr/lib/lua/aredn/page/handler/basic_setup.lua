@@ -65,6 +65,11 @@ function model.page_handler(data)
 		table.insert(errors, vres)
 	end
 
+	vres=valid.timezone(data.time.timezone)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
 	-- persist settings
 
 	if #errors > 0 then 

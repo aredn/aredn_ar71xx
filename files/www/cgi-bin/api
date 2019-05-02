@@ -270,9 +270,15 @@ for page, comps in pairs(qsset) do
 		info['pages'][page]={}
 	end
 
-	if page=="api" then
+	if page=="api" and comps==nil then
 		info['pages'][page]=nil
 		info['api_help']="AREDN API. This API's primary function is to drive the Web UI."
+	elseif page=="list" then
+		for i,comp in pairs(comps:split(',')) do
+			if comp=="timezones" then
+				info['pages'][page][comp]=aredn_info.getListOfTimezones()
+			end
+		end
 	elseif page=="status" then
 		for i,comp in pairs(comps:split(',')) do
 			if comp=="meshrf" then

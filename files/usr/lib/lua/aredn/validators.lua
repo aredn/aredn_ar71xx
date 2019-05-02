@@ -106,6 +106,26 @@ function model.nodeDescription(value)
   return true
 end
 
+-------------------------------------
+-- Timezone
+-------------------------------------
+function model.timezone(value)
+  local result = {}
+  local msgs = {}
+
+  local aredn_info=require("aredn.info")
+  local hasTZ = listContains(aredn_info.getListOfTimezones(), value)  
+  if hasTZ==nil then
+    table.insert(msgs, "Timezone is invalid")
+  end
+
+  if #msgs > 0 then 
+    result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    result['messages'] = msgs
+    return result
+  end
+  return true
+end
 
 
 return model

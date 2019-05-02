@@ -76,6 +76,15 @@ function setContains(set, key)
     return set[key] ~= nil
 end
 
+function listContains(list, key)
+  for _, v in ipairs(list) do
+    if key==v then
+      return v
+    end
+  end
+  return nil
+end
+
 function sleep(n)  -- seconds
 	posix.sleep(n)
 end

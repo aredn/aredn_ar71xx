@@ -479,4 +479,19 @@ function model.getLocalHosts()
 	return hosts
 end
 
+-------------------------------------
+-- Returns a list of available timezones
+-------------------------------------
+function model.getListOfTimezones()
+	local tzs = {}
+	local line
+	if nixio.fs.access("/etc/zoneinfo") then
+		for line in io.lines("/etc/zoneinfo") do	
+			local spline = line:splitWhiteSpace()
+			table.insert(tzs, spline[1])
+		end
+	end
+	return tzs
+end
+
 return model
