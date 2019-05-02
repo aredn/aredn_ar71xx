@@ -79,7 +79,6 @@ local function process_post_request(jsondata)
 		if jsondata['page']=="basic_setup" then
 			local ph = require("aredn.page.handler.basic_setup")
 			info['result'] = ph.page_handler(jsondata['data'])
-		-- elseif jsondata['page']=="more_pages_here" then
 		end
 	else
 		info['error']="request must contains valid 'page' and 'data' elements"

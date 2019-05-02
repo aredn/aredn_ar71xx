@@ -63,8 +63,8 @@ function model.nodeName(value)
   end
 
   if #msgs > 0 then 
-    result['msgs'] = msgs
     result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    result['messages'] = msgs
     return result
   end
   return true
@@ -92,8 +92,8 @@ function model.nodePassword(value)
   end
 
   if #msgs > 0 then 
-    result['msgs'] = msgs
     result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    result['messages'] = msgs
     return result
   end
   return true

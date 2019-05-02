@@ -68,12 +68,10 @@ function model.page_handler(data)
 	-- persist settings
 
 	if #errors > 0 then 
-		table.insert(result, errors)
+		return errors
 	else
-		result="ok"
+		return "ok"
 	end
-
-	return result
 end
 
 return model
