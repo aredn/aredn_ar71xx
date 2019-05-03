@@ -54,28 +54,115 @@ function model.page_handler(data)
 	local errors = {}
 	local vres
 
-	-- validate fields
-	vres=valid.nodeName(data.node_info.name)
+	-- NODE_INFO
+	if not data.node_info.name==nil then
+		vres=valid.nodeName(data.node_info.name)
+		if vres~=true then
+			table.insert(errors, vres)
+		end
+	end
+
+	vres=valid.nodePassword(data.node_info.password or nil)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
 
-	vres=valid.nodePassword(data.node_info.password)
+	vres=valid.nodeDescription(data.node_info.description or nil)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
 
+	-- MESH_RF
+	vres=valid.ipAddress(data.mesh_rf.ip)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	vres=valid.netmask(data.mesh_rf.netmask)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	vres=valid.ssidPrefix(data.mesh_rf.ssid_prefix)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+--[[
+	vres=valid.channel(data.mesh_rf.channel)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+--]]
+	vres=valid.bandwidth(data.mesh_rf.bandwidth)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+--[[
+	vres=valid.power(data.mesh_rf.power)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+--]]
+	vres=valid.distance(data.mesh_rf.distance)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	-- LAN
+	vres=valid.lanMode(data.lan.mode)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	-- WAN
+	vres=valid.wanProtocol(data.wan.protocol)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+--[[
+	vres=valid.ipAddress(data.wan.dns.primary)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	vres=valid.wanMode(data.wan.dns.secondary)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+]]
+	-- ADVANCED WAN
+
+	-- LOCATION
+	vres=valid.latitude(data.location.latitude)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+	
+	vres=valid.longitude(data.location.longitude)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	vres=valid.gridSquare(data.location.gridsquare)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	-- TIME
 	vres=valid.timezone(data.time.timezone)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
 
-	-- persist settings
+	--------- persist settings
+	--------- persist settings
+
 
 	if #errors > 0 then 
 		return errors
 	else
-		return "ok"
+		return "success"
 	end
 end
 
