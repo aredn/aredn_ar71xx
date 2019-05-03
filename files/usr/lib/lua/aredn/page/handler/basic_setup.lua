@@ -55,19 +55,17 @@ function model.page_handler(data)
 	local vres
 
 	-- NODE_INFO
-	if not data.node_info.name==nil then
-		vres=valid.nodeName(data.node_info.name)
-		if vres~=true then
-			table.insert(errors, vres)
-		end
-	end
-
-	vres=valid.nodePassword(data.node_info.password or nil)
+	vres=valid.nodeName(data.node_info.name)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
 
-	vres=valid.nodeDescription(data.node_info.description or nil)
+	vres=valid.nodePassword(data.node_info.password)
+	if vres~=true then
+		table.insert(errors, vres)
+	end
+
+	vres=valid.nodeDescription(data.node_info.description)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
