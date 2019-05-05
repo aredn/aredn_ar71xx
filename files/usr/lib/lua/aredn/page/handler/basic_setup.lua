@@ -38,7 +38,8 @@ require("uci")
 require("aredn.uci")
 require("aredn.utils")
 require("nixio")
-local valid = require("aredn.validators")
+local valid = require("aredn.validators.basic_setup")
+local common_valid = require("aredn.validators.common")
 local json = require("luci.jsonc")
 
 -- Function extensions
@@ -71,12 +72,12 @@ function model.page_handler(data)
 	end
 
 	-- MESH_RF
-	vres=valid.ipAddress(data.mesh_rf.ip)
+	vres=common_valid.ipAddress(data.mesh_rf.ip)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
 
-	vres=valid.netmask(data.mesh_rf.netmask)
+	vres=common_valid.netmask(data.mesh_rf.netmask)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
@@ -85,12 +86,12 @@ function model.page_handler(data)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
---[[
+
 	vres=valid.channel(data.mesh_rf.channel)
 	if vres~=true then
 		table.insert(errors, vres)
 	end
---]]
+
 	vres=valid.bandwidth(data.mesh_rf.bandwidth)
 	if vres~=true then
 		table.insert(errors, vres)
