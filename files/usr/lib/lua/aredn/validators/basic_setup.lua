@@ -149,10 +149,10 @@ function model.channel(value)
   -- local band = aredn_info.getBand()
   local band = "2400"            --------------------------------------------- DEBUGGING ONLY
   local clist = channels.getChannels(band)
-
   local found = false
-  for c,f in ipairs(clist) do
-    if c==value then
+
+  for c,f in pairs(clist) do    -- cannot use ipairs because clist may contain negative index values on 2ghz
+    if c==tonumber(value) then
       found=true
       break
     end
@@ -169,8 +169,6 @@ function model.channel(value)
   end
   return true
 end
-
-
 
 -------------------------------------
 --    BANDWIDTH data
