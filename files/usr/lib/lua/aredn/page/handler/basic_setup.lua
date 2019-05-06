@@ -130,8 +130,8 @@ function model.page_handler(data)
 	end
 
 	-- ADVANCED WAN
-
-	
+	-- mesh_gateway (boolean)
+	-- default_route (boolean)
 
 	-- LOCATION
 	vres=valid.latitude(data.location.latitude)
