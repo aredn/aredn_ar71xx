@@ -49,7 +49,8 @@ local model = {}
 -------------------------------------
 --    IP Address data
 -------------------------------------
-function model.ipAddress(value)
+function model.ipAddress(value, field_name)
+  field_name = field_name or dbg.getinfo(1).name
   local result = {}
   local msgs = {}
   
@@ -58,7 +59,7 @@ function model.ipAddress(value)
   end
   
   if #msgs > 0 then 
-    result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    result['field'] = field_name     -- use reflection to get this function's name
     result['messages'] = msgs
     return result
   end
@@ -68,7 +69,8 @@ end
 -------------------------------------
 --    NETMASK data
 -------------------------------------
-function model.netmask(value)
+function model.netmask(value, field_name)
+  field_name = field_name or dbg.getinfo(1).name
   local result = {}
   local msgs = {}
   
@@ -77,7 +79,7 @@ function model.netmask(value)
   end
   
   if #msgs > 0 then 
-    result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
+    result['field'] = field_name     -- use reflection to get this function's name
     result['messages'] = msgs
     return result
   end

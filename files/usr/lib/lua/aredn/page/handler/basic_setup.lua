@@ -119,18 +119,19 @@ function model.page_handler(data)
 		table.insert(errors, vres)
 	end
 
---[[
-	vres=valid.ipAddress(data.wan.dns.primary)
+	vres=common_valid.ipAddress(data.wan.dns.primary, "dns_primary")
 	if vres~=true then
 		table.insert(errors, vres)
 	end
 
-	vres=valid.wanMode(data.wan.dns.secondary)
+	vres=common_valid.ipAddress(data.wan.dns.secondary, "dns_secondary")
 	if vres~=true then
 		table.insert(errors, vres)
 	end
-]]
+
 	-- ADVANCED WAN
+
+	
 
 	-- LOCATION
 	vres=valid.latitude(data.location.latitude)
