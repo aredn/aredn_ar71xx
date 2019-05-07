@@ -81,7 +81,7 @@ local function process_post_request(jsondata)
 			info['result'] = ph.page_handler(jsondata['data'])
 		elseif jsondata['page']=="port_forwarding" then
 			local ph = require("aredn.page.handler.port_forwarding")
-			info['result'] = ph.page_handler(jsondata['data'])
+			-- info['result'] = ph.page_handler(jsondata['data'])
 		end
 	else
 		info['error']="request must contains valid 'page' and 'data' elements"

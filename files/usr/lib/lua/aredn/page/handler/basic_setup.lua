@@ -40,6 +40,7 @@ require("aredn.utils")
 require("nixio")
 local valid = require("aredn.validators.basic_setup")
 local common_valid = require("aredn.validators.common")
+local common_ph = require("aredn.page.handler.common")
 local json = require("luci.jsonc")
 
 -- Function extensions
@@ -54,115 +55,104 @@ function model.page_handler(data)
 	local result = {}
 	local errors = {}
 	local vres
+	local pres
 
 	-- NODE_INFO
-	vres=valid.nodeName(data.node_info.name)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=valid.nodePassword(data.node_info.password)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=valid.nodeDescription(data.node_info.description)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
+	common_ph.validateField(errors, valid.nodeName, data.node_info.name)
+	common_ph.validateField(errors, valid.nodePassword, data.node_info.password)
+	common_ph.validateField(errors, valid.nodeDescription, data.node_info.description)
+	
 	-- MESH_RF
-	vres=common_valid.ipAddress(data.mesh_rf.ip)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=common_valid.netmask(data.mesh_rf.netmask)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=valid.ssidPrefix(data.mesh_rf.ssid_prefix)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=valid.channel(data.mesh_rf.channel)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=valid.bandwidth(data.mesh_rf.bandwidth)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
---[[
-	vres=valid.power(data.mesh_rf.power)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
---]]
-	vres=valid.distance(data.mesh_rf.distance)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
+	common_ph.validateField(errors, common_valid.ipAddress, data.mesh_rf.ip)
+	common_ph.validateField(errors, common_valid.netmask, data.mesh_rf.netmask)
+	common_ph.validateField(errors, valid.ssidPrefix, data.mesh_rf.ssid_prefix)
+	common_ph.validateField(errors, valid.channel, data.mesh_rf.channel)
+	common_ph.validateField(errors, valid.bandwidth, data.mesh_rf.bandwidth)
+	--	common_ph.validateField(errors, valid.power, data.mesh_rf.power)
+	common_ph.validateField(errors, valid.distance, data.mesh_rf.distance)
+	
 	-- LAN
-	vres=valid.lanMode(data.lan.mode)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
+	common_ph.validateField(errors, valid.lanMode, data.lan.mode)
+	
 	-- WAN
-	vres=valid.wanProtocol(data.wan.protocol)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=common_valid.ipAddress(data.wan.dns.primary, "dns_primary")
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=common_valid.ipAddress(data.wan.dns.secondary, "dns_secondary")
-	if vres~=true then
-		table.insert(errors, vres)
-	end
+	common_ph.validateField(errors, valid.wanProtocol, data.wan.protocol)
+	common_ph.validateField(errors, common_valid.ipAddress, data.wan.dns.primary, "dns_primary")
+	common_ph.validateField(errors, common_valid.ipAddress, data.wan.dns.secondary, "dns_secondary")
 
 	-- ADVANCED WAN
 	-- mesh_gateway (boolean)
 	-- default_route (boolean)
 
 	-- LOCATION
-	vres=valid.latitude(data.location.latitude)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
+	common_ph.validateField(errors, valid.latitude, data.location.latitude)
+	common_ph.validateField(errors, valid.longitude, data.location.longitude)
+	common_ph.validateField(errors, valid.gridSquare, data.location.gridsquare)
 	
-	vres=valid.longitude(data.location.longitude)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	vres=valid.gridSquare(data.location.gridsquare)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
 	-- TIME
-	vres=valid.timezone(data.time.timezone)
-	if vres~=true then
-		table.insert(errors, vres)
-	end
-
-	--------- persist settings
-	--------- persist settings
-
-
+	common_ph.validateField(errors, valid.timezone, data.time.timezone)
+	
 	if #errors > 0 then 
 		return errors
 	else
-		return "success"
+		-- memory cleanup (unload validators)
+		valid = nil
+		common_valid = nil
+
+		--------- persist settings
+		local store = require("aredn.persistors.basic_setup")
+		local u=uci:cursor()
+
+		
+		-- more TODO
+		
+
+		-- NODE_INFO
+		common_ph.storeValue(errors, store.nodeName, u, data.node_info.name)
+--[[
+		common_ph.storeValue(errors, store.nodeName, u, data.node_info.name)
+		common_ph.storeValue(errors, store.nodePassword, u, data.node_info.password)
+		common_ph.storeValue(errors, store.nodeDescription, data.node_info.description)
+		
+		-- MESH_RF
+		common_ph.storeValue(errors, store.meshRfIpAddress, u, data.mesh_rf.ip)
+		common_ph.storeValue(errors, store.meshRfNetmask, u, data.mesh_rf.netmask)
+		common_ph.storeValue(errors, store.ssidPrefix, u, data.mesh_rf.ssid_prefix)
+		common_ph.storeValue(errors, store.channel, u, data.mesh_rf.channel)
+		common_ph.storeValue(errors, store.bandwidth, u, data.mesh_rf.bandwidth)
+	--	common_ph.storeValue(errors, store.power, u, data.mesh_rf.power)
+		common_ph.storeValue(errors, store.distance, u, data.mesh_rf.distance)
+		
+		-- LAN
+		common_ph.storeValue(errors, store.lanMode, u, data.lan.mode)
+		
+		-- WAN
+		common_ph.storeValue(errors, store.wanProtocol, u, data.wan.protocol)
+		common_ph.storeValue(errors, store.wanDNSPrimary.ipAddress, u, data.wan.dns.primary, "dns_primary")
+		common_ph.storeValue(errors, store.wanDNSSecondary.ipAddress, u, data.wan.dns.secondary, "dns_secondary")
+
+		-- ADVANCED WAN
+		-- mesh_gateway (boolean)
+		-- default_route (boolean)
+
+		-- LOCATION
+		common_ph.storeValue(errors, store.latitude, u, data.location.latitude)
+		common_ph.storeValue(errors, store.longitude, u, data.location.longitude)
+		common_ph.storeValue(errors, store.gridSquare, u, data.location.gridsquare)
+		
+		-- TIME
+		common_ph.storeValue(errors, store.timezone, u, data.time.timezone)
+]]
+		common_ph.storeValue(errors, store.ntpServer, u, data.time.ntp)
+		
+		if #errors > 0 then
+			return errors
+		else
+			if u:commit("system") then
+				return "success"
+			else
+				return "failed"
+			end
+		end
 	end
 end
 
