@@ -63,14 +63,21 @@ end
 --    Node Password
 -------------------------------------
 function model.nodePassword(u, value)
-  return false
+  local cmd=string.format("/usr/local/bin/setpasswd '%s'", value)
+  local res=os.execute(cmd)
+  if res==0 then
+    return true
+  else
+    return false
+  end
 end
 
 -------------------------------------
 --    Node Description
 -------------------------------------
 function model.nodeDescription(u, value)
-  return u:set("system", "@system[0]", "description", value)
+  --local lvalue = value or ""
+  return u:set("system", "@system[0]", "description", lvalue)
 end
 
 -- ==================================
@@ -151,21 +158,22 @@ end
 --    LATITUDE data
 -------------------------------------
 function model.latitude(u, value)
-  return false
+  -- return true
+  return u:set("aredn", "location", "latitude", value)
 end
 
 -------------------------------------
 --    LONGITUDE data
 -------------------------------------
 function model.longitude(u, value)
-  return false
+  return u:set("aredn", "location", "longitude", value)
 end
 
 -------------------------------------
 --    GRIDSQUARE data
 -------------------------------------
 function model.gridSquare(u, value)
-  return false
+  return u:set("aredn", "location", "gridsquare", value)
 end
 
 -- ==================================

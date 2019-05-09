@@ -102,17 +102,12 @@ function model.page_handler(data)
 		local store = require("aredn.persistors.basic_setup")
 		local u=uci:cursor()
 
-		
-		-- more TODO
-		
-
 		-- NODE_INFO
-		common_ph.storeValue(errors, store.nodeName, u, data.node_info.name)
---[[
+
 		common_ph.storeValue(errors, store.nodeName, u, data.node_info.name)
 		common_ph.storeValue(errors, store.nodePassword, u, data.node_info.password)
-		common_ph.storeValue(errors, store.nodeDescription, data.node_info.description)
-		
+		-- common_ph.storeValue(errors, store.nodeDescription, data.node_info.description)
+--[[
 		-- MESH_RF
 		common_ph.storeValue(errors, store.meshRfIpAddress, u, data.mesh_rf.ip)
 		common_ph.storeValue(errors, store.meshRfNetmask, u, data.mesh_rf.netmask)
@@ -133,21 +128,22 @@ function model.page_handler(data)
 		-- ADVANCED WAN
 		-- mesh_gateway (boolean)
 		-- default_route (boolean)
-
+]]
 		-- LOCATION
 		common_ph.storeValue(errors, store.latitude, u, data.location.latitude)
+--[[
 		common_ph.storeValue(errors, store.longitude, u, data.location.longitude)
 		common_ph.storeValue(errors, store.gridSquare, u, data.location.gridsquare)
 		
 		-- TIME
 		common_ph.storeValue(errors, store.timezone, u, data.time.timezone)
-]]
+
 		common_ph.storeValue(errors, store.ntpServer, u, data.time.ntp)
-		
+]]		
 		if #errors > 0 then
 			return errors
 		else
-			if u:commit("system") then
+			if u:commit("system") and u:commit("aredn") then
 				return "success"
 			else
 				return "failed"
