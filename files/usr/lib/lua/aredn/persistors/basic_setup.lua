@@ -46,6 +46,14 @@ require("aredn.utils")
 -------------------------------------
 local model = {}
 
+-------------------------------------
+-- Local variables for combination fields
+-------------------------------------
+local l_ssidPrefix
+local l_channel
+local l_bandwidth
+
+
 -- ++++++++++++++++++++++++++++++++++
 -- BASIC SETUP data
 -- ++++++++++++++++++++++++++++++++++
@@ -90,24 +98,48 @@ end
 --    NETMASK data (COMMON)
 -------------------------------------
 -------------------------------------
---    SSID data
--------------------------------------
-function model.ssidPrefix(u, value)
-  return false
-end
-
--------------------------------------
 --    CHANNEL data
 -------------------------------------
 function model.channel(u, value)
-  return false
+  l_channel = value
+  -- store the field
+  
+  if l_bandwidth ~= nil and l_channel ~= nil and l_ssidPrefix ~= nil then
+    -- store the combo field
+    junk=nil
+
+  else
+    return false
+  end
 end
 
 -------------------------------------
 --    BANDWIDTH data
 -------------------------------------
 function model.bandwidth(u, value)
-  return false
+  l_bandwidth = value
+  -- store the field
+  
+  if l_bandwidth ~= nil and l_channel ~= nil and l_ssidPrefix ~= nil then
+    -- store the combo field
+    nil = nil
+  else
+    return false
+  end
+end
+
+-------------------------------------
+--    SSID data
+-------------------------------------
+function model.ssidPrefix(u, value)
+  l_ssidPrefix = value
+
+  if l_bandwidth ~= nil and l_channel ~= nil and l_ssidPrefix ~= nil then
+    -- store the combo field
+    nil = nil
+  else
+    return false
+  end
 end
 
 -------------------------------------
@@ -193,7 +225,6 @@ function model.ntpServer(u, value)
   local current = {}
   -- we only allow one ntp server, get get the existing one
   current=u:get("system","ntp","server")
-  -- then update it
   current[1]=value
   if u:set("system","ntp", "server", current) then
     return true
