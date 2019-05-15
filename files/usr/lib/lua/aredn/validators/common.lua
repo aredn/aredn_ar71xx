@@ -86,5 +86,24 @@ function model.netmask(value, field_name)
   return true
 end
 
+-------------------------------------
+--    Generic Boolean data
+-------------------------------------
+function model.boolean(value, field_name)
+  field_name = field_name or dbg.getinfo(1).name
+  local result = {}
+  local msgs = {}
+  
+  if type(value)~="boolean" then
+    table.insert(msgs, "Not a valid boolean value")
+  end
+  
+  if #msgs > 0 then 
+    result['field'] = field_name     -- use reflection to get this function's name
+    result['messages'] = msgs
+    return result
+  end
+  return true
+end
 
 return model

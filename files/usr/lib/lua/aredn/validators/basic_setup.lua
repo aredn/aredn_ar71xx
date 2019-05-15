@@ -115,6 +115,9 @@ end
 --  MESH_RF section data
 -- ==================================
 -------------------------------------
+--    RF Enabled (COMMON)
+-------------------------------------
+-------------------------------------
 --    IP Address data (COMMON)
 -------------------------------------
 -------------------------------------
@@ -131,6 +134,10 @@ function model.ssidPrefix(value)
     table.insert(msgs, "SSID prefix must be 32 characters or less")
   end
   
+  if value:contains("'") then
+    table.insert(msgs, "SSID prefix cannot contains single quotes")
+  end
+
   if #msgs > 0 then 
     result['field'] = dbg.getinfo(1).name     -- use reflection to get this function's name
     result['messages'] = msgs

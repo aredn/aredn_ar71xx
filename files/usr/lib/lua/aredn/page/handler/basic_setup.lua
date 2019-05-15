@@ -63,6 +63,7 @@ function model.page_handler(data)
 	common_ph.validateField(errors, valid.nodeDescription, data.node_info.description)
 	
 	-- MESH_RF
+	common_ph.validateField(errors, common_valid.boolean, data.mesh_rf.enabled, "mesh_rf_enabled")
 	common_ph.validateField(errors, common_valid.ipAddress, data.mesh_rf.ip)
 	common_ph.validateField(errors, common_valid.netmask, data.mesh_rf.netmask)
 	common_ph.validateField(errors, valid.ssidPrefix, data.mesh_rf.ssid_prefix)
@@ -80,8 +81,8 @@ function model.page_handler(data)
 	common_ph.validateField(errors, common_valid.ipAddress, data.wan.dns.secondary, "dns_secondary")
 
 	-- ADVANCED WAN
-	-- mesh_gateway (boolean)
-	-- default_route (boolean)
+	common_ph.validateField(errors, common_valid.boolean, data.advanced_wan.mesh_gateway, "mesh_gateway")
+	common_ph.validateField(errors, common_valid.boolean, data.advanced_wan.default_route, "default_route")
 
 	-- LOCATION
 	common_ph.validateField(errors, valid.latitude, data.location.latitude)
@@ -106,17 +107,21 @@ function model.page_handler(data)
 
 		common_ph.storeValue(errors, store.nodeName, u, data.node_info.name)
 		common_ph.storeValue(errors, store.nodePassword, u, data.node_info.password)
-		-- common_ph.storeValue(errors, store.nodeDescription, data.node_info.description)
---[[
+		common_ph.storeValue(errors, store.nodeDescription, data.node_info.description)
+
 		-- MESH_RF
+		common_ph.storeValue(errors, store.meshRfEnabled, u, data.mesh_rf.enabled)
+--[[
 		common_ph.storeValue(errors, store.meshRfIpAddress, u, data.mesh_rf.ip)
 		common_ph.storeValue(errors, store.meshRfNetmask, u, data.mesh_rf.netmask)
-		common_ph.storeValue(errors, store.ssidPrefix, u, data.mesh_rf.ssid_prefix)
+]]
 		common_ph.storeValue(errors, store.channel, u, data.mesh_rf.channel)
 		common_ph.storeValue(errors, store.bandwidth, u, data.mesh_rf.bandwidth)
-	--	common_ph.storeValue(errors, store.power, u, data.mesh_rf.power)
+		common_ph.storeValue(errors, store.ssid, u, data.mesh_rf.ssid_prefix, data.mesh_rf.bandwidth)
+		common_ph.storeValue(errors, store.meshTxPower, u, data.mesh_rf.power)
 		common_ph.storeValue(errors, store.distance, u, data.mesh_rf.distance)
-		
+
+--[[		
 		-- LAN
 		common_ph.storeValue(errors, store.lanMode, u, data.lan.mode)
 		

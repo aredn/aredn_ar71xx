@@ -40,6 +40,7 @@ local uci = require("uci")
 local json = require("luci.jsonc")
 local dbg = require("debug")
 require("aredn.utils")
+local aredn_info = require("aredn.info")
 
 -------------------------------------
 -- Public API is attached to table
@@ -47,12 +48,9 @@ require("aredn.utils")
 local model = {}
 
 -------------------------------------
--- Local variables for combination fields
+-- Private variables
 -------------------------------------
-local l_ssidPrefix
-local l_channel
-local l_bandwidth
-
+local meshRadio = aredn_info.getMeshRadioDevice()
 
 -- ++++++++++++++++++++++++++++++++++
 -- BASIC SETUP data
@@ -92,6 +90,13 @@ end
 --  MESH_RF section data
 -- ==================================
 -------------------------------------
+--    MeshRF Enabled data
+-------------------------------------
+function model.meshRfEnabled(u, value)
+  return u:set("wireless", meshRadio, "disabled", not value)
+end
+
+-------------------------------------
 --    IP Address data (COMMON)
 -------------------------------------
 -------------------------------------
@@ -101,56 +106,37 @@ end
 --    CHANNEL data
 -------------------------------------
 function model.channel(u, value)
-  l_channel = value
-  -- store the field
-  
-  if l_bandwidth ~= nil and l_channel ~= nil and l_ssidPrefix ~= nil then
-    -- store the combo field
-    junk=nil
-
-  else
-    return false
-  end
+  return u:set("wireless", meshRadio, "channel", value)
 end
 
 -------------------------------------
 --    BANDWIDTH data
 -------------------------------------
 function model.bandwidth(u, value)
-  l_bandwidth = value
-  -- store the field
-  
-  if l_bandwidth ~= nil and l_channel ~= nil and l_ssidPrefix ~= nil then
-    -- store the combo field
-    nil = nil
-  else
-    return false
-  end
+  return u:set("wireless", meshRadio, "chanbw", not value)
 end
 
 -------------------------------------
---    SSID data
+--    SSID data (combination)
 -------------------------------------
-function model.ssidPrefix(u, value)
-  l_ssidPrefix = value
-
-  if l_bandwidth ~= nil and l_channel ~= nil and l_ssidPrefix ~= nil then
-    -- store the combo field
-    nil = nil
-  else
-    return false
-  end
+function model.ssid(u, ssid_prefix, bw)
+  local protocol_ver = "v3"
+  local ssid = ssid_prefix .. "-" .. bw .. "-" .. protocol_ver
+  return u:set("wireless", "@wifi-iface[0]", "ssid", ssid)
 end
 
 -------------------------------------
 --    POWER data
 -------------------------------------
+function model.meshTxPower(u, value)
+  return u:set("aredn", "meshrf", "tx_power", value)
+end
 
 -------------------------------------
 --    DISTANCE data
 -------------------------------------
 function model.distance(u, value)
-  return false
+  return u:set("wireless", meshRadio, "distance", value)
 end
 
 
