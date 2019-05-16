@@ -95,7 +95,7 @@ function model.boolean(value, field_name)
   local msgs = {}
   
   if type(value)~="boolean" then
-    table.insert(msgs, "Not a valid boolean value")
+    table.insert(msgs, "Not a valid boolean value (should be:  true or false)")
   end
   
   if #msgs > 0 then 

@@ -35,8 +35,8 @@
 --]]
 
 --------------------- BASIC SETUP persistors ------------------
-
-local uci = require("uci")
+require("uci")
+-- local au = require("aredn.uci")
 local json = require("luci.jsonc")
 local dbg = require("debug")
 require("aredn.utils")
@@ -52,6 +52,19 @@ local model = {}
 -------------------------------------
 local meshRadio = aredn_info.getMeshRadioDevice()
 
+
+-------------------------------------
+-- Private functions
+-------------------------------------
+function upsert(u, conf, sect, opt, value)
+  if u:get(conf, sect)==nil then
+    newsect = sect:gsub("^@", "")
+    newsect = newsect:gsub("%[[0-9+]%]$","")
+    u:add(conf, newsect)
+  end
+  return u:set(conf, sect, opt, value)
+end
+
 -- ++++++++++++++++++++++++++++++++++
 -- BASIC SETUP data
 -- ++++++++++++++++++++++++++++++++++
@@ -62,7 +75,10 @@ local meshRadio = aredn_info.getMeshRadioDevice()
 --    Node name
 -------------------------------------
 function model.nodeName(u, value)
-  return u:set("system", "@system[0]", "hostnametest", value)
+  --if u:get("system", "@system[0]")==nil then
+  --  u:add("system", "@system")
+  --end
+  return upsert(u, "system", "@system[0]", "hostnametest", value)
 end
 
 -------------------------------------
@@ -82,8 +98,8 @@ end
 --    Node Description
 -------------------------------------
 function model.nodeDescription(u, value)
-  --local lvalue = value or ""
-  return u:set("system", "@system[0]", "description", lvalue)
+  if value==nil then value="" end
+  return upsert(u, "system", "@system[0]", "description", value)
 end
 
 -- ==================================
@@ -93,27 +109,41 @@ end
 --    MeshRF Enabled data
 -------------------------------------
 function model.meshRfEnabled(u, value)
-  return u:set("wireless", meshRadio, "disabled", not value)
+  local ucival
+  if value then
+    ucival="0"  -- value is enabled, so the uci "disabled" value false "0"
+  else
+    ucival="1"
+  end
+  return upsert(u, "wireless", meshRadio, "disabled", ucival)
 end
 
 -------------------------------------
---    IP Address data (COMMON)
+--    IP Address data
 -------------------------------------
+function model.meshRfIpAddress(u, value)
+  return upsert(u, "aredn", "@meshrf[0]", "ipaddress", value)
+end
+
 -------------------------------------
---    NETMASK data (COMMON)
+--    NETMASK data
 -------------------------------------
+function model.meshRfNetmask(u, value)
+  return upsert(u, "aredn", "@meshrf[0]", "netmask", value)
+end
+
 -------------------------------------
 --    CHANNEL data
 -------------------------------------
 function model.channel(u, value)
-  return u:set("wireless", meshRadio, "channel", value)
+  return upsert(u, "wireless", meshRadio, "channel", value)
 end
 
 -------------------------------------
 --    BANDWIDTH data
 -------------------------------------
 function model.bandwidth(u, value)
-  return u:set("wireless", meshRadio, "chanbw", not value)
+  return upsert(u, "wireless", meshRadio, "chanbw", value)
 end
 
 -------------------------------------
@@ -122,21 +152,28 @@ end
 function model.ssid(u, ssid_prefix, bw)
   local protocol_ver = "v3"
   local ssid = ssid_prefix .. "-" .. bw .. "-" .. protocol_ver
-  return u:set("wireless", "@wifi-iface[0]", "ssid", ssid)
+  return upsert(u, "wireless", "@wifi-iface[0]", "ssid", ssid)
 end
 
 -------------------------------------
 --    POWER data
 -------------------------------------
 function model.meshTxPower(u, value)
-  return u:set("aredn", "meshrf", "tx_power", value)
+  return upsert(u, "aredn", "@meshrf[0]", "txpower", value)
 end
 
 -------------------------------------
 --    DISTANCE data
 -------------------------------------
 function model.distance(u, value)
-  return u:set("wireless", meshRadio, "distance", value)
+  local ms_distance
+  value = tonumber(value)
+  if value ~= 0 then
+    ms_distance = round2(value * 151.5151 + 64, 0)
+  else
+    ms_distance = value
+  end
+  return upsert(u, "wireless", meshRadio, "distance", ms_distance)
 end
 
 
@@ -176,22 +213,21 @@ end
 --    LATITUDE data
 -------------------------------------
 function model.latitude(u, value)
-  -- return true
-  return u:set("aredn", "location", "latitude", value)
+  return upsert(u, "aredn", "@location[0]", "latitude", value)
 end
 
 -------------------------------------
 --    LONGITUDE data
 -------------------------------------
 function model.longitude(u, value)
-  return u:set("aredn", "location", "longitude", value)
+  return upsert(u, "aredn", "@location[0]", "longitude", value)
 end
 
 -------------------------------------
 --    GRIDSQUARE data
 -------------------------------------
 function model.gridSquare(u, value)
-  return u:set("aredn", "location", "gridsquare", value)
+  return upsert(u, "aredn", "@location[0]", "gridsquare", value)
 end
 
 -- ==================================
@@ -201,7 +237,7 @@ end
 --    Timezone
 -------------------------------------
 function model.timezone(u, value)
-  return u:set("system", "@system[0]", "timezone", value)
+  return upsert(u, "system", "@system[0]", "timezone", value)
 end
 
 -------------------------------------
@@ -212,7 +248,7 @@ function model.ntpServer(u, value)
   -- we only allow one ntp server, get get the existing one
   current=u:get("system","ntp","server")
   current[1]=value
-  if u:set("system","ntp", "server", current) then
+  if upsert(u, "system","ntp", "server", current) then
     return true
   end
   return false

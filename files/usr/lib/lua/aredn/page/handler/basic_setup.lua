@@ -35,7 +35,7 @@
 --]]
 
 require("uci")
-require("aredn.uci")
+local au = require("aredn.uci")
 require("aredn.utils")
 require("nixio")
 local valid = require("aredn.validators.basic_setup")
@@ -99,22 +99,22 @@ function model.page_handler(data)
 		valid = nil
 		common_valid = nil
 
-		--------- persist settings
+		--------- persist settings -----------------------------------------
+		--------- persist settings -----------------------------------------
+		--------- persist settings -----------------------------------------
+		--------- persist settings -----------------------------------------
 		local store = require("aredn.persistors.basic_setup")
 		local u=uci:cursor()
 
 		-- NODE_INFO
-
 		common_ph.storeValue(errors, store.nodeName, u, data.node_info.name)
 		common_ph.storeValue(errors, store.nodePassword, u, data.node_info.password)
-		common_ph.storeValue(errors, store.nodeDescription, data.node_info.description)
+		common_ph.storeValue(errors, store.nodeDescription, u, data.node_info.description)
 
 		-- MESH_RF
 		common_ph.storeValue(errors, store.meshRfEnabled, u, data.mesh_rf.enabled)
---[[
 		common_ph.storeValue(errors, store.meshRfIpAddress, u, data.mesh_rf.ip)
 		common_ph.storeValue(errors, store.meshRfNetmask, u, data.mesh_rf.netmask)
-]]
 		common_ph.storeValue(errors, store.channel, u, data.mesh_rf.channel)
 		common_ph.storeValue(errors, store.bandwidth, u, data.mesh_rf.bandwidth)
 		common_ph.storeValue(errors, store.ssid, u, data.mesh_rf.ssid_prefix, data.mesh_rf.bandwidth)
@@ -136,10 +136,9 @@ function model.page_handler(data)
 ]]
 		-- LOCATION
 		common_ph.storeValue(errors, store.latitude, u, data.location.latitude)
---[[
 		common_ph.storeValue(errors, store.longitude, u, data.location.longitude)
 		common_ph.storeValue(errors, store.gridSquare, u, data.location.gridsquare)
-		
+--[[
 		-- TIME
 		common_ph.storeValue(errors, store.timezone, u, data.time.timezone)
 
@@ -148,7 +147,7 @@ function model.page_handler(data)
 		if #errors > 0 then
 			return errors
 		else
-			if u:commit("system") and u:commit("aredn") then
+			if u:commit("system") and u:commit("aredn") and u:commit("wireless") then
 				return "success"
 			else
 				return "failed"
