@@ -44,6 +44,7 @@ require("nixio")
 require("ubus")
 require("iwinfo")
 
+os.capture=capture
 -------------------------------------
 -- Public API is attached to table
 -------------------------------------
@@ -487,4 +488,23 @@ function model.getLocalHosts()
 	return hosts
 end
 
+---------------------------------
+-- Returns Throughput of an interface
+-- checks /proc/net/dev twice, waiting 1 second between
+-- returns a string, "rx tx", in Bytes for the 1 second interval
+---------------------------------
+function getThroughput(inf)
+    rxtx0={}
+    rxtx1={}
+    match=string.chomp(os.capture("grep "..inf.." /proc/net/dev"))
+    for substr in string.gmatch(match, "%S+") do
+      table.insert(rxtx0, substr)
+    end
+    sleep(1)
+    match=string.chomp(os.capture("grep "..inf.." /proc/net/dev"))
+    for substr in string.gmatch(match, "%S+") do
+      table.insert(rxtx1, substr)
+    end
+    return rxtx1[2]-rxtx0[2].." "..rxtx1[10]-rxtx0[10]
+end
 return model
