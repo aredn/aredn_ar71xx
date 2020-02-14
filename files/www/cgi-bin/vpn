@@ -458,7 +458,7 @@ sub print_vpn_clients()
 
 	#contact info for the tunnel
         print "</tr>";
-        print "<tr class='tun_client_list1 tun_client_row tun_loading_css_comment'><td colspan='2' align='right'>Contact Info/Comment (Optional): <input type=text size=40 name=client${val}_contact value='$contact'";
+        print "<tr class='tun_client_list1 tun_client_row tun_loading_css_comment'><td colspan='2' align='right'>Contact Info/Comment (Optional): <input type=text maxlength='50' size=40 name=client${val}_contact value='$contact'";
         print " onChange='form.submit()'" unless ($val eq "_add" || $val eq "");
         print " title='client contact info'></td>";
 
