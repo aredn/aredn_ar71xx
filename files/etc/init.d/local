@@ -84,7 +84,9 @@ boot() {
     # get the URLs from distfeeds.conf and set the initial UCI values if not present
     if [ -z $ucirepo ]; then
       uci set aredn.@downloads[0].pkgs_$1=$distrepo
-      uci -q commit aredn
+      uci commit aredn
+      uci -c /etc/config.mesh set aredn.@downloads[0].pkgs_$1=$distrepo
+      uci -c /etc/config.mesh commit aredn
     # check values in distfeeds.conf against UCI settings
     # and change distfeeds.conf if needed (upgrades?)
     ## commented for now, may need it later

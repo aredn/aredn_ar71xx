@@ -146,20 +146,6 @@ push @setting, {
 
 # ----------------------------------------
 
-# ----- package repo functions -----
-sub getPackageRepo {
-  my $repo = @_[0];
-  my $file = '/etc/opkg/distfeeds.conf';
-  #chomp $repo;
-  open my $fh, '<', $file or die "Could not open $file!";
-  while(my $row = <$fh>) {
-    if($row =~ /\b$repo\b/) {
-      my @url = split / /, $row;
-      return chomp @url[2];
-    }
-  }
-}
-
 # ----- CONDITIONS ----------
 sub hasPOE()
 {
@@ -203,7 +189,8 @@ sub writePackageRepo {
   my $file = '/etc/opkg/distfeeds.conf';
   my $disturl = `grep aredn_$repo /etc/opkg/distfeeds.conf | cut -d' ' -f3`;
   chomp($disturl);
-  `sed -i "s|$disturl|$uciurl|g" $file`;
+  #`sed -i "s|$disturl|$uciurl|g" $file`;
+  system("sed -i 's|$disturl|$uciurl|g' $file");
 }
 # ----- CALLBACKS ----------
 
