@@ -2089,8 +2089,6 @@ sub defaultPackageRepos {
   my $url = '';
   #check release
   if ($release =~ /\./) {
-    #print $release . "\n";
-    #stable release
     my @nums = split /\./, $release;
     $urlprefix .= "/releases/" . @nums[0] . "/" . @nums[1] . "/" . $release . "/";
   } else {

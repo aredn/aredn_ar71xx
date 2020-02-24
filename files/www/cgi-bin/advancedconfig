@@ -189,7 +189,6 @@ sub writePackageRepo {
   my $file = '/etc/opkg/distfeeds.conf';
   my $disturl = `grep aredn_$repo /etc/opkg/distfeeds.conf | cut -d' ' -f3`;
   chomp($disturl);
-  #`sed -i "s|$disturl|$uciurl|g" $file`;
   system("sed -i 's|$disturl|$uciurl|g' $file");
 }
 # ----- CALLBACKS ----------
