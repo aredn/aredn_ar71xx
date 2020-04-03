@@ -682,7 +682,7 @@ if(@fw_output)
 }
 
 print "<tr><td align=center colspan=3>current version: $fw_version</td></tr>\n";
-print "<tr><td align=center colspan=3>hardware type: $mfgprefix (${hardwaretype}) (${targettype})</td></tr>\n";
+print "<tr><td align=center colspan=3>hardware type: (${targettype}) $mfgprefix (${hardwaretype})</td></tr>\n";
 print "<tr>\n";
 print "<td>Upload Firmware</td>\n";
 print "<td><input type=file name=firmfile title='choose the firmware file to install from your hard drive' accept='.bin' onchange='validateFirmwareFilename(this)'></td>\n";
