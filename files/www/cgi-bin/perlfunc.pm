@@ -1897,7 +1897,7 @@ sub alert_banner
       print "<div style=\"padding:5px;background-color:#FFFF00;border:1px solid #ccc;width:600px;\"><a href=\"/cgi-bin/sysinfo\">!!!! UNTESTED HARDWARE !!!!</a></div>\n";
     }
   }
-  print "<div style=\"padding:5px;background-color:#FFFF00;border:1px solid #ccc;width:600px;\">AREDN Alert(s):<br />$aredn_message</div>\n" if $aredn_message;
+  print "<div style=\"padding:5px;background-color:#FFFF00;border:1px solid #ccc;width:600px;\"><strong>AREDN Alert(s):</strong><br /><div style=\"text-align:left;\">$aredn_message</div></div>\n" if $aredn_message;
 
   #TopBanner
   print "</div>";

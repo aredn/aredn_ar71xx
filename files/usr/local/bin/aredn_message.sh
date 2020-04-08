@@ -46,13 +46,16 @@ then
   # nodename=$(echo "$HOSTNAME" | tr 'A-Z' 'a-z')
   nodename=$(echo "$HOSTNAME" | tr 'A-Z' 'a-z')
   wget -q -O aredn_message -P /tmp http://downloads.arednmesh.org/messages/"${nodename}".txt
+  echo "<strong>(${nodename}):</strong>"|cat - /tmp/aredn_message > /tmp/out && mv /tmp/out /tmp/aredn_message
   if [ $? -ne 0 ] # no node specific file
   then
     # fetch broadcast message file
     wget -q -O aredn_message -P /tmp http://downloads.arednmesh.org/messages/all.txt
+    echo "<strong>(QST):</strong>"|cat - /tmp/aredn_message > /tmp/out && mv /tmp/out /tmp/aredn_message
   else
     # need to append to node file
     wget -q -O aredn_message_all -P /tmp http://downloads.arednmesh.org/messages/all.txt &&
+      echo "<strong>(QST):</strong>"|cat - /tmp/aredn_message_all > /tmp/out && mv /tmp/out /tmp/aredn_message_all
       echo "<br />" >> /tmp/aredn_message;
       cat /tmp/aredn_message_all >> /tmp/aredn_message;
       rm /tmp/aredn_message_all;
