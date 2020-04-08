@@ -34,15 +34,14 @@ true <<'LICENSE'
 LICENSE
 
 # does the node have access to downloads.arednmesh.org
-ping -W10 -c1 downloads.arednmesh.org > /dev/null
-if [ $? -eq 0 ]
-then
-  # remove old file
-  if [ -f /tmp/aredn_message ]
-  then
-    rm /tmp/aredn_message
-  fi
+ping -W10 -c1 downloads.arednmesh.org > /dev/null && 
+  online=true;
+  [ -f /tmp/aredn_message ] && 
+  rm /tmp/aredn_message
 
+
+if [ $online = "true" ] 
+then
   # fetch node specific message file
   # nodename=$(echo "$HOSTNAME" | tr 'A-Z' 'a-z')
   nodename=$(echo "$HOSTNAME" | tr 'A-Z' 'a-z')
@@ -53,13 +52,10 @@ then
     wget -O aredn_message -P /tmp http://downloads.arednmesh.org/messages/all.txt
   else
     # need to append to node file
-    wget -O aredn_message_all -P /tmp http://downloads.arednmesh.org/messages/all.txt
-    if [ $? -eq 0 ] # has all.txt
-    then
-      echo "<br />" >> /tmp/aredn_message
-      cat /tmp/aredn_message_all >> /tmp/aredn_message
-      rm /tmp/aredn_message_all
-    fi
+    wget -O aredn_message_all -P /tmp http://downloads.arednmesh.org/messages/all.txt &&
+      echo "<br />" >> /tmp/aredn_message;
+      cat /tmp/aredn_message_all >> /tmp/aredn_message;
+      rm /tmp/aredn_message_all;
   fi
 fi
 
