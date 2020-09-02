@@ -36,7 +36,7 @@
 
 =cut
 
-$debug = 0;
+$debug = 1;
 
 BEGIN {push @INC, '/www/cgi-bin'};
 use perlfunc;
@@ -628,7 +628,7 @@ $parms{alias_num} = $alias_num;
 # save configuration
 #
 
-if($parms{button_save} and not (@port_err or @dhcp_err or @dmz_err or @serv_err))
+if($parms{button_save} and not (@port_err or @dhcp_err or @dmz_err or @serv_err or @alias_err))
 {
     system "cp -f $tmpdir/ports $portfile";
     system "cp -f $tmpdir/dhcp $dhcpfile";
@@ -1001,6 +1001,9 @@ sub print_services
 	    print " disabled" unless $val eq "_add" or $link;
 	    print ">\n";
 	    selopt($node, $node, $host);
+	    for($i = 1; $i <= $parms{alias_num}; $i++) {
+            selopt($parms{"alias${i}_host"}, $parms{"alias${i}_host"}, $host);
+	    }
 	    for($i = 1; $i <= $parms{dhcp_num}; $i++)
 	    {
 		selopt($parms{"dhcp${i}_host"}, $parms{"dhcp${i}_host"}, $host);
@@ -1072,10 +1075,6 @@ sub print_aliases {
             $ipname = $selip or $ip;
             selopt($ipname, $selip, $ip);
         }
-#        $ipname = $dhcphosts{$selip};
-#        $ipname = $selip if $selip eq $ip or not $ipname;
-#        next if not $ipname;
-#        selopt($ipname, $selip, $ip);
     }
     print "</select></td>\n";
     print "<td><nobr>&nbsp;<input type=submit name=";
