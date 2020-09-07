@@ -473,6 +473,64 @@ for($i = $nn = 1; $i <= $parms{dhcp_num}; $i++)
 }
 close(FILE);
 
+#
+# aliases
+#
+for($i = 1, @list = (); $i <= $parms{alias_num}; ++$i) { push @list, $i }
+push @list, "_add";
+$alias_num = 0;
+foreach $val (@list) {
+    $host = $parms{"alias${val}_host"};
+    $ip   = $parms{"alias${val}_ip"};
+    #if adding alias check the name is not already in use,
+    #also check that it does not contain anything that will be weird on the mesh
+    #for instance: supercoolservice.kg6wxc-host.local.mesh is certainly a valid host name, but it won't work for the mesh.
+    if($val eq "_add") {
+        if($host) {
+            my $olsrFile = 0;
+        	$olsrFile = 1 if -f "/var/run/hosts_olsr";
+        	if($olsrFile) {
+                open(my $hostFile, "<", "/var/run/hosts_olsr");
+                while(<$hostFile>) {
+            		if($_ =~ /\s$host\s/i) {
+                        $foundHost = 1;
+              			last;
+                    }
+          		}
+                close($hostFile);
+         		push(@alias_err, "$val <font color='red'>Warning!</font> '$host' is already in use!<br>" .
+         		"Please choose another alias name.<br>" .
+            	"Prefixing the hostname with your callsign will help prevent duplicates on the network.") if $foundHost == 1;
+        	}
+        	push(@alias_err, "$val <font color='red'>Warning!</font> The alias name: '$host' is invalid") if !validate_hostname($host);
+            push(@alias_err, "$val '$host' cannot contain the dot '.' character!") if index($host, ".") != -1;
+        }
+        next unless ($host or $ip or $foundHost) and ($parms{alias_add} or $parms{button_save});
+    } else {
+        next if $parms{"alias${val}_del"};
+    }
+    if($val eq "_add" and $parms{button_save}) {
+        push(@alias_err, "$val this alias must be added or cleared out before saving changes");
+        next;
+    }
+    next if $val eq "_add" and @alias_err and $alias_err[-1] =~ /^$val /;
+    # commit the data for this alias
+    ++$alias_num;
+    $parms{"alias${alias_num}_host"} = $host;
+    $parms{"alias${alias_num}_ip"}   = $ip;
+    $hosts{$host} = 1;
+    if($val eq "_add") {
+        $parms{alias_add_host} = "";
+        $parms{alias_add_ip}   = "";
+    }
+}
+#write to temp file
+open(FILE, ">$tmpdir/aliases");
+for($i = 1, @list = (); $i <= $alias_num; ++$i) {
+    printf FILE "%s %s\n", $parms{"alias${i}_ip"}, $parms{"alias${i}_host"};
+}
+close(FILE);
+$parms{alias_num} = $alias_num;
 
 #
 # load and validate the services
@@ -567,64 +625,6 @@ close(FILE);
 $parms{serv_num} = $serv_num;
 
 #
-# aliases
-#
-for($i = 1, @list = (); $i <= $parms{alias_num}; ++$i) { push @list, $i }
-push @list, "_add";
-$alias_num = 0;
-foreach $val (@list) {
-    $host = $parms{"alias${val}_host"};
-    $ip   = $parms{"alias${val}_ip"};
-    #if adding alias check the name is not already in use,
-    #also check that it does not contain anything that will be weird on the mesh
-    #for instance: supercoolservice.kg6wxc-host.local.mesh is certainly a valid host name, but it won't work for the mesh.
-    if($val eq "_add") {
-        if($host) {
-            my $olsrFile = 0;
-        	$olsrFile = 1 if -f "/var/run/hosts_olsr";
-        	if($olsrFile) {
-                open(my $hostFile, "<", "/var/run/hosts_olsr");
-                while(<$hostFile>) {
-            		if($_ =~ /\s$host\s/i) {
-                        $foundHost = 1;
-              			last;
-                    }
-          		}
-                close($hostFile);
-         		push(@alias_err, "$val <font color='red'>Warning!</font> '$host' is already in use!<br>" .
-         		"Please choose another alias name.<br>" .
-            	"Prefixing the hostname with your callsign will help prevent duplicates on the network.") if $foundHost == 1;
-        	}
-        	push(@alias_err, "$val <font color='red'>Warning!</font> The alias name: '$host' is invalid") if !validate_hostname($host);
-            push(@alias_err, "$val '$host' cannot contain the dot '.' character!") if index($host, ".") != -1;
-        }
-        next unless ($host or $ip or $foundHost) and ($parms{alias_add} or $parms{button_save});
-    } else {
-        next if $parms{"alias${val}_del"};
-    }
-    if($val eq "_add" and $parms{button_save}) {
-        push(@alias_err, "$val this alias must be added or cleared out before saving changes");
-        next;
-    }
-    next if $val eq "_add" and @alias_err and $alias_err[-1] =~ /^$val /;
-    # commit the data for this alias
-    ++$alias_num;
-    $parms{"alias${alias_num}_host"} = $host;
-    $parms{"alias${alias_num}_ip"}   = $ip;
-    if($val eq "_add") {
-        $parms{alias_add_host} = "";
-        $parms{alias_add_ip}   = "";
-    }
-}
-#write to temp file
-open(FILE, ">$tmpdir/aliases");
-for($i = 1, @list = (); $i <= $alias_num; ++$i) {
-    printf FILE "%s %s\n", $parms{"alias${i}_ip"}, $parms{"alias${i}_host"};
-}
-close(FILE);
-$parms{alias_num} = $alias_num;
-
-#
 # save configuration
 #
 
@@ -634,6 +634,7 @@ if($parms{button_save} and not (@port_err or @dhcp_err or @dmz_err or @serv_err 
     system "cp -f $tmpdir/dhcp $dhcpfile";
     system "cp -f $tmpdir/services $servfile";
     system "cp -f $tmpdir/aliases $aliasfile";
+
     push(@errors, "problem with configuration")  if system "/usr/local/bin/node-setup -a -p mesh";
 
     unless($debug == 3)
