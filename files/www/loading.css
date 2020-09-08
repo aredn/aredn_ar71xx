@@ -103,4 +103,7 @@ width: 40%;
 .tun_loading_css_comment {
   font-size: 10pt;
 }
-
+.muted-text {
+/*  color: #757575; */
+  color: #595959;
+}

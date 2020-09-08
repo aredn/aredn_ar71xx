@@ -65,3 +65,7 @@ background-color: dimgrey;
 font-size: 12pt;
 width: 40%;
 }
+.muted-text {
+/*  color: #757575; */
+  color: #595959;
+}
