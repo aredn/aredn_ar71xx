@@ -193,6 +193,7 @@ $dhcpfile  = "/etc/config.mesh/_setup.dhcp";
 $portfile .= ($cfg{dmz_mode} ? ".dmz" : ".nat");
 $dhcpfile .= ($cfg{dmz_mode} ? ".dmz" : ".nat");
 $aliasfile = "/etc/config.mesh/aliases";
+$aliasfile .= ($cfg{dmz_mode} ? ".dmz" : ".nat");
 
 
 # basic configuration

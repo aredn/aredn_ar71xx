@@ -95,7 +95,10 @@ my $suffix = $dmz_mode ? ".dmz" : ".nat";
 $portfile .= $suffix;
 $dhcpfile .= $suffix;
 $servfile .= $suffix;
-#do not need mesh aliases in anything other than "dmz_mode"
+$aliasfile .= $suffix;
+
+#find old alias file and move it to dmz file
+if(-e "/etc/config.mesh/aliases") { system "cat /etc/config.mesh/aliases > /etc/config.mesh/aliases.dmz ; rm /etc/config.mesh/aliases"; }
 
 # if a reset or a first time page load
 # read the data from the config files
