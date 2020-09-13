@@ -17,7 +17,7 @@ The process of contributing and tracking changes to AREDN is circular. Code is m
 
 When you are satisfied with your changes, COMMIT them to your local computer's repository, then PUSH those local changes to your copy of the code on your own GitHub account. Finally, create a PULL REQUEST, which tells the AREDN development team that you would like your changes to be reviewed for inclusion in the AREDN Master repository.
 
-![GitHub Workflow](_images/GitHub-workflow.png)
+![GitHub Workflow](GitHub-workflow.png)
 
 #### One-time Repository Setup:
 
@@ -55,4 +55,3 @@ Now your local environment knows about both the master code repository and your 
 	2. On your forked copy of your GitHub repository: `git push origin --delete my-wiz-bang-feature-name`
 
 You can continue contributing new features by beginning the development cycle again, starting with step 1 on the Ongoing Development Cycle.
-
